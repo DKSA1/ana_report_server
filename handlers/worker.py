@@ -369,44 +369,59 @@ async def maintain_task():
                 # logger.info(result_info)
 
                 # 插入商品信息
-                ins = insert(ebay_product_report_result)
-                insert_stmt = ins.values(result_info)
-                on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
-                    task_id=insert_stmt.inserted.task_id,
-                    item_id=insert_stmt.inserted.item_id,
-                    img=insert_stmt.inserted.img,
-                    title=insert_stmt.inserted.title,
-                    site=insert_stmt.inserted.site,
-                    brand=insert_stmt.inserted.brand,
-                    category_path=insert_stmt.inserted.category_path,
-                    store_location=insert_stmt.inserted.store_location,
-                    gmv_last_3_pop=insert_stmt.inserted.gmv_last_3_pop,
-                    gmv_last_3=insert_stmt.inserted.gmv_last_3,
-                    gmv_last_1=insert_stmt.inserted.gmv_last_1,
-                    sold_last_1=insert_stmt.inserted.sold_last_1,
-                    sold_last_3=insert_stmt.inserted.sold_last_3,
-                    visit=insert_stmt.inserted.visit,
-                    cvr=insert_stmt.inserted.cvr,
-                    date=insert_stmt.inserted.date,
-                )
-                result = conn.execute(on_duplicate_key_stmt)
-                # logger.info(result)
-                get_result_count += 1
+                try:
+                    ins = insert(ebay_product_report_result)
+                    insert_stmt = ins.values(result_info)
+                    on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
+                        task_id=insert_stmt.inserted.task_id,
+                        item_id=insert_stmt.inserted.item_id,
+                        img=insert_stmt.inserted.img,
+                        title=insert_stmt.inserted.title,
+                        site=insert_stmt.inserted.site,
+                        brand=insert_stmt.inserted.brand,
+                        category_path=insert_stmt.inserted.category_path,
+                        store_location=insert_stmt.inserted.store_location,
+                        gmv_last_3_pop=insert_stmt.inserted.gmv_last_3_pop,
+                        gmv_last_3=insert_stmt.inserted.gmv_last_3,
+                        gmv_last_1=insert_stmt.inserted.gmv_last_1,
+                        sold_last_1=insert_stmt.inserted.sold_last_1,
+                        sold_last_3=insert_stmt.inserted.sold_last_3,
+                        visit=insert_stmt.inserted.visit,
+                        cvr=insert_stmt.inserted.cvr,
+                        date=insert_stmt.inserted.date,
+                    )
+                    result = conn.execute(on_duplicate_key_stmt)
+                    # logger.info(result)
+                    get_result_count += 1
 
-            # 更新任务状态
-            ins = update(ebay_custom_report_task)
-            ins = ins.values({
-                "status": 1,
-                "update_time": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
-                "get_result_count": get_result_count,
-                "product_total": index_result['hits']['total']['value'],
-                "sold_total": index_result['aggregations']['sold_total']['value']
-            }).where(
-                ebay_custom_report_task.c.task_id == task['task_id']
-            )
-
-            result = conn.execute(ins)
-            # logger.info(result)
+                    # 更新任务状态
+                    ins = update(ebay_custom_report_task)
+                    ins = ins.values({
+                        "status": 1,
+                        "update_time": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
+                        "get_result_count": get_result_count,
+                        "product_total": index_result['hits']['total']['value'],
+                        "sold_total": index_result['aggregations']['sold_total']['value']
+                    }).where(
+                        ebay_custom_report_task.c.task_id == task['task_id']
+                    )
+                    result = conn.execute(ins)
+                    # logger.info(result)
+                except Exception as e:
+                    logger.info(e)
+                    # 更新任务状态
+                    ins = update(ebay_custom_report_task)
+                    ins = ins.values({
+                        "status": 2,
+                        "update_time": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
+                        "get_result_count": get_result_count,
+                        "product_total": index_result['hits']['total']['value'],
+                        "sold_total": index_result['aggregations']['sold_total']['value']
+                    }).where(
+                        ebay_custom_report_task.c.task_id == task['task_id']
+                    )
+                    result = conn.execute(ins)
+                    # logger.info(result)
 
 
 def run():
