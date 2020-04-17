@@ -95,4 +95,4 @@ OUTPUT_NSQ_CONF = {
     'nsqd_tcp_addresses': NSQ_NSQD_TCP_ADDR
 }
 
-REPORT_TASK_TOPIC = "ebay_analysis_report"
+EBAY_REPORT_TASK_TOPIC = "ebay_analysis_report.product"

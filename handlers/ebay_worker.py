@@ -18,7 +18,7 @@ from util.task_protocol import ANATask
 from aioelasticsearch import Elasticsearch
 
 WORKER_NUMBER = 1
-TOPIC_NAME = REPORT_TASK_TOPIC + '.product'
+# TOPIC_NAME = REPORT_TASK_TOPIC + '.product'
 
 
 class ESBody:
@@ -254,10 +254,10 @@ engine = create_engine(
 logger.info(SQLALCHEMY_DATABASE_URI)
 
 
-async def handle(group, task):
+async def ebay_handle(group, task):
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
-    logger.info(task_log)
+    # logger.info(task_log)
     # 更新任务状态
     # with engine.connect() as conn:
     #     update_task_status = ebay_custom_report_task.update().where(
@@ -272,7 +272,7 @@ async def handle(group, task):
     #     conn.execute(update_task_status)
 
 
-async def maintain_task():
+async def ebay_maintain_task():
     logger.info("connecting")
     with engine.connect() as conn:
         logger.info("connect success")
@@ -284,7 +284,7 @@ async def maintain_task():
             )
         ))
         es = ESBody()
-        logger.info(task_datas)
+        # logger.info(task_datas)
         # 逐个任务完成查询es写入db
         for task in task_datas:
             search_body = es.create_search(task)
@@ -298,7 +298,7 @@ async def maintain_task():
                 index=task['index_name'],
                 body=search_body,
                 size=task['result_count'])
-            logger.info(index_result)
+            # logger.info(index_result)
             # 报告商品结果列表
             the_es_result = index_result['hits']['hits']
             name_ids = []
@@ -424,20 +424,20 @@ async def maintain_task():
                     # logger.info(result)
 
 
-def run():
-    input_end = NsqInputEndpoint(TOPIC_NAME, 'ebay_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
-    logger.info('连接nsq成功,topic_name = {}, nsq_address={}'.format(TOPIC_NAME, INPUT_NSQ_CONF))
-    server = pipeflow.Server()
-    logger.info("pipeflow开始工作")
-    group = server.add_group('main', WORKER_NUMBER)
-    logger.info("抓取任务")
-    group.set_handle(handle)
-    logger.info("处理任务")
-    group.add_input_endpoint('input', input_end)
+# def run():
+#     input_end = NsqInputEndpoint(TOPIC_NAME, 'ebay_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
+#     logger.info('连接nsq成功,topic_name = {}, nsq_address={}'.format(TOPIC_NAME, INPUT_NSQ_CONF))
+#     server = pipeflow.Server()
+#     logger.info("pipeflow开始工作")
+#     group = server.add_group('main', WORKER_NUMBER)
+#     logger.info("抓取任务")
+#     group.set_handle(ebay_handle)
+#     logger.info("处理任务")
+#     group.add_input_endpoint('input', input_end)
+#
+#     server.add_routine_worker(ebay_maintain_task, interval=5, immediately=True)
+#     server.run()
 
-    server.add_routine_worker(maintain_task, interval=5, immediately=True)
-    server.run()
 
-
-if __name__ == '__main__':
-    run()
+# if __name__ == '__main__':
+#     run()

@@ -1,1 +1,1 @@
-from .sync_order import sync_order_handle
+from .ebay_worker import ebay_handle, ebay_maintain_task
