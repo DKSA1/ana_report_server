@@ -19,6 +19,14 @@ def run():
     logger.info("处理ebay任务")
     group.add_input_endpoint('input', input_end)
 
+
+
+
+
+
+
+
+
     server.add_routine_worker(ebay_maintain_task, interval=5, immediately=True)
     server.run()
 
