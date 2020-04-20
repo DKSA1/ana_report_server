@@ -47,7 +47,7 @@ SQLALCHEMY_DATABASE_URI = "mysql+pymysql://{name:s}:{pw:s}@{addr:s}:{port}/{db:s
     )
 
 SQLALCHEMY_POOL_PRE_PING = True
-SQLALCHEMY_ECHO = False if PRODUCTION_ENV else True
+SQLALCHEMY_ECHO = False  # if PRODUCTION_ENV else True
 SQLALCHEMY_POOL_SIZE = 0
 SQLALCHEMY_POOL_MAX_OVERFLOW = -1
 SQLALCHEMY_POOL_RECYCLE = 120
@@ -96,3 +96,5 @@ OUTPUT_NSQ_CONF = {
 }
 
 EBAY_REPORT_TASK_TOPIC = "ebay_analysis_report.product"
+
+AMAZON_REPORT_TASK_TOPIC = "amazon_analysis_report.product"
