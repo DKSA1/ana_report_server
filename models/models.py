@@ -1,7 +1,10 @@
 from sqlalchemy import Table, Column, PrimaryKeyConstraint, Integer, String, TIMESTAMP, \
     Boolean, TEXT, DECIMAL, SMALLINT, Float, Date, DateTime
 from sqlalchemy.dialects.mysql import TINYINT
+from sqlalchemy.ext.declarative import declarative_base
 from models import metadata
+
+Base = declarative_base()
 
 ebay_category = Table(
     'ebay_category', metadata,
@@ -220,3 +223,51 @@ ebay_product_report_result = Table(
     Column('date', DateTime, nullable=False),
     Column('update_time', DateTime, nullable=False),
 )
+
+
+class AmazonTask(Base):
+        __tablename__ = 'amazon_custom_report_task'
+        __table_args__ = (
+            PrimaryKeyConstraint('task_id', 'user_id', name='PK_id'),
+        )
+        task_id = Column(Integer)
+        user_id = Column(Integer, nullable=False)
+        report_name = Column(String(128), nullable=False, default=0)
+        site = Column(String(8))
+        create_time = Column(TIMESTAMP, nullable=True)
+        update_time = Column(TIMESTAMP, nullable=True)
+        report_chart = Column(String(8), nullable=True)
+        # 0=待执行， 1=执行中，2=成功，3=失败
+        status = Column(Integer, nullable=False, default=0)
+        save_result_numb = Column(Integer, nullable=True)
+        context = Column(TEXT, nullable=False, default='')
+        order_by = Column(String(32))
+        order = Column(String(4))
+        methods = Column(String(512))
+        product_total = Column(Integer, default=0)
+        sold_total_7 = Column(Integer, default=0)
+        gmv_total_7 = Column(DECIMAL(10, 2), default=0)
+        type = Column(String(32))
+        index_name = Column(String(32))
+
+
+class AmazonTaskResult(Base):
+        __tablename__ = 'amazon_product_report_result'
+        __table_args__ = (
+            PrimaryKeyConstraint('id', 'asin', name='PK_id'),
+        )
+        id = Column(Integer, autoincrement=True)
+        task_id = Column(Integer, nullable=False)
+        asin = Column(String(16), nullable=False)
+        img = Column(String(256), default='')
+        title = Column(String(512), nullable=False, default='')
+        site = Column(String(32), nullable=False)
+        brand = Column(String(64), nullable=True)
+        merchant_name = Column(String(128), nullable=True)
+        price = Column(DECIMAL(8, 2), nullable=True, default=0)
+        top_category_rank = Column(Integer, nullable=True)
+        sold_last_7 = Column(Integer, nullable=False, default=0)
+        gmv_last_7 = Column(DECIMAL(12, 2))
+        sold_last_30 = Column(Integer)
+        gmv_last_30 = Column(DECIMAL(12, 2), default=0)
+        review_score = Column(DECIMAL(8, 2), default=0)

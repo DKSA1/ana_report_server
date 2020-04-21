@@ -2,32 +2,40 @@ import json
 import pipeflow
 from config import *
 from util.log import logger
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from pipeflow import HTTPOutputEndpoint, HTTPInputEndpoint, NsqInputEndpoint
 from handlers import *
 
 WORKER_NUMBER = 4
 
+engine = create_engine(SQLALCHEMY_DATABASE_URI,
+                       echo=SQLALCHEMY_ECHO,
+                       pool_size=SQLALCHEMY_POOL_SIZE,
+                       max_overflow=SQLALCHEMY_POOL_MAX_OVERFLOW,
+                       pool_recycle=SQLALCHEMY_POOL_RECYCLE,
+                       )
+db_session_mk = sessionmaker(bind=engine)
+
 
 def run():
-    input_end = NsqInputEndpoint(EBAY_REPORT_TASK_TOPIC, 'ebay_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
-    logger.info('连接nsq成功,topic_name = {}, nsq_address={}'.format(EBAY_REPORT_TASK_TOPIC, INPUT_NSQ_CONF))
     server = pipeflow.Server()
-    logger.info("pipeflow开始工作")
+    # ebay 报表任务处理
+    input_end = NsqInputEndpoint(EBAY_REPORT_TASK_TOPIC, 'ebay_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
     group = server.add_group('main', WORKER_NUMBER)
-    logger.info("抓取ebay任务")
     group.set_handle(ebay_handle)
-    logger.info("处理ebay任务")
     group.add_input_endpoint('input', input_end)
 
+    # 处理 Amazon报表任务
+    amazon_input_end = NsqInputEndpoint(AMAZON_REPORT_TASK_TOPIC, 'amazon_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
+    amazon_report_group = server.add_group('amazon_report', WORKER_NUMBER)
+    amazon_report_group.set_handle(amazon_handle)
+    amazon_report_group.add_input_endpoint("input", amazon_input_end)
 
+    # 把数据库任务 推到NSQ中
+    task_save_to_nsq = TaskSaveToNsqScheduler(db_session_mk)
+    server.add_worker(task_save_to_nsq.schedule)
 
-
-
-
-
-
-
-    # server.add_routine_worker(ebay_maintain_task, interval=5, immediately=True)
     server.run()
 
 
