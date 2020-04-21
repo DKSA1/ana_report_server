@@ -4,33 +4,6 @@ ENV_TYPE = os.environ.get('ENV_TYPE', '')
 # print(ENV_TYPE)
 PRODUCTION_ENV = True if ENV_TYPE == 'PRODUCTION' else False
 
-# DB_USER_NAME = "root" if PRODUCTION_ENV else "linkcool"
-# DB_USER_PW = "@ie0bzy3!dlpq*d7" if PRODUCTION_ENV else "forconnect"
-# DB_SEVER_ADDR = "10.0.1.7" if PRODUCTION_ENV else "119.145.69.74"
-# DB_SEVER_PORT = 4000 if PRODUCTION_ENV else 43021
-# DB_DATABASE_NAME = "bigdata"
-
-
-# DB_USER_NAME = "root" if PRODUCTION_ENV else "linkcool"
-# DB_USER_PW = "@ie0bzy3!dlpq*d7" if PRODUCTION_ENV else "forconnect"
-# DB_SEVER_ADDR = "134.175.210.192" if PRODUCTION_ENV else "119.145.69.74"
-# DB_SEVER_PORT = 4000 if PRODUCTION_ENV else 43021
-# DB_DATABASE_NAME = "bigdata"
-
-# DB_USER_NAME = "wind" if PRODUCTION_ENV else "linkcool"
-# DB_USER_PW = "!Syy950507" if PRODUCTION_ENV else "forconnect"
-# DB_SEVER_ADDR = "47.112.96.218" if PRODUCTION_ENV else "119.145.69.74"
-# DB_SEVER_PORT = 3306 if PRODUCTION_ENV else 43021
-# DB_DATABASE_NAME = "bigdata"
-
-
-#
-# DB_USER_NAME = "linkcool" if PRODUCTION_ENV else "root"
-# DB_USER_PW = "forconnect" if PRODUCTION_ENV else "@ie0bzy3!dlpq*d7"
-# DB_SEVER_ADDR = "119.145.69.74" if PRODUCTION_ENV else "134.175.210.192"
-# DB_SEVER_PORT = 43021 if PRODUCTION_ENV else 4000
-# DB_DATABASE_NAME = "bigdata"
-
 
 DB_USER_NAME = "root" if PRODUCTION_ENV else "wind"
 DB_USER_PW = "@ie0bzy3!dlpq*d7" if PRODUCTION_ENV else "!Syy950507"
@@ -79,10 +52,6 @@ REDIS_PORT = 6379 if PRODUCTION_ENV else 13111
 REDIS_DB_NUMBER = 0
 REDIS_PASSWORD = "$redis.813" if PRODUCTION_ENV else "c18d1ba0f01f15b2168297663a85abf5"
 REDIS_URL = f'redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB_NUMBER}'
-
-# NSQ_LOOKUPD_HTTP_ADDR = 'bd-nsqlookupd:4161' if PRODUCTION_ENV else '134.73.133.2:25761'
-# NSQ_NSQD_TCP_ADDR = 'bd-nsqd:4150' if PRODUCTION_ENV else '134.73.133.2:25750'
-# NSQ_NSQD_HTTP_ADDR = 'bd-nsqd:4151' if PRODUCTION_ENV else '134.73.133.2:25751'
 
 NSQ_LOOKUPD_HTTP_ADDR = 'bd-nsqlookupd:4161' if PRODUCTION_ENV else '47.112.96.218:4161'
 NSQ_NSQD_TCP_ADDR = 'bd-nsqd:4150' if PRODUCTION_ENV else '47.112.96.218:4150'
