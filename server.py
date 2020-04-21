@@ -27,7 +27,7 @@ def run():
 
 
 
-    server.add_routine_worker(ebay_maintain_task, interval=5, immediately=True)
+    # server.add_routine_worker(ebay_maintain_task, interval=5, immediately=True)
     server.run()
 
 
