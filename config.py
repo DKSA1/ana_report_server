@@ -1,7 +1,7 @@
 import os
 
 ENV_TYPE = os.environ.get('ENV_TYPE', '')
-# print(ENV_TYPE)
+
 PRODUCTION_ENV = True if ENV_TYPE == 'PRODUCTION' else False
 
 
@@ -25,25 +25,35 @@ SQLALCHEMY_POOL_SIZE = 0
 SQLALCHEMY_POOL_MAX_OVERFLOW = -1
 SQLALCHEMY_POOL_RECYCLE = 120
 
-ELASTIC_HOST = "10.0.1.3" if PRODUCTION_ENV else "es-fx731b5q.public.tencentelasticsearch.com"
-ELASTIC_PORT = 9200 if PRODUCTION_ENV else 9200
-ELASTIC_INDEX = "" if PRODUCTION_ENV else ""
-ELASTIC_DOC_TYPE = "" if PRODUCTION_ENV else ""
-ELASTIC_VALUES = "" if PRODUCTION_ENV else ""
-ELASTIC_USE_SSL = True
 ELASTIC_TIMEOUT = 60
-ELASTIC_USERNAME = "elastic" if PRODUCTION_ENV else "elastic"
-ELASTIC_PASSWORD = "$EStest.813" if PRODUCTION_ENV else "$EStest.813"
-# ELASTICSEARCH_URL = \
-#     f'http://{ELASTIC_USERNAME}:{ELASTIC_PASSWORD}@{ELASTIC_HOST}:{ELASTIC_PORT}' \
-#         if PRODUCTION_ENV else "http://47.102.220.1:9200"
-# ELASTICSEARCH_URL = f'https://{ELASTIC_USERNAME}:{ELASTIC_PASSWORD}@{ELASTIC_HOST}:{ELASTIC_PORT}' \
-#         if PRODUCTION_ENV else "https://elastic:$EStest.813@es-fx731b5q.public.tencentelasticsearch.com:9200/"
-# ELASTICSEARCH_URL = f"https://elastic:$EStest.813@es-fx731b5q.public.tencentelasticsearch.com:9200/"
-# ELASTIC_VALUES = {'index': "ebay", 'doc_type': "ebay_product"}
-ELASTICSEARCH_URL = [{'host': ELASTIC_HOST, 'port': ELASTIC_PORT, 'user_ssl': ELASTIC_USE_SSL,
-                      'http_auth': (ELASTIC_USERNAME, ELASTIC_PASSWORD)}] \
+# 下面为 eBay大数据对应的 es配置参数
+EBAY_ELASTIC_HOST = "10.0.1.3" if PRODUCTION_ENV else "es-fx731b5q.public.tencentelasticsearch.com"
+EBAY_ELASTIC_PORT = 9200 if PRODUCTION_ENV else 9200
+EBAY_ELASTIC_INDEX = "" if PRODUCTION_ENV else ""
+EBAY_ELASTIC_DOC_TYPE = "" if PRODUCTION_ENV else ""
+EBAY_ELASTIC_VALUES = "" if PRODUCTION_ENV else ""
+EBAY_ELASTIC_USE_SSL = True
+EBAY_ELASTIC_USERNAME = "elastic" if PRODUCTION_ENV else "elastic"
+EBAY_ELASTIC_PASSWORD = "$EStest.813" if PRODUCTION_ENV else "$EStest.813"
+EBAY_ELASTICSEARCH_URL = [{'host': EBAY_ELASTIC_HOST, 'port': EBAY_ELASTIC_PORT, 'user_ssl': EBAY_ELASTIC_USE_SSL,
+                      'http_auth': (EBAY_ELASTIC_USERNAME, EBAY_ELASTIC_PASSWORD)}] \
     if PRODUCTION_ENV else "https://elastic:$EStest.813@es-fx731b5q.public.tencentelasticsearch.com:9200/"
+
+
+# 下面为 Amazon大数据对应的 es配置参数
+AMAZON_ELASTIC_HOST = "10.0.1.3" if PRODUCTION_ENV else "es-fx731b5q.public.tencentelasticsearch.com"
+AMAZON_ELASTIC_PORT = 9200 if PRODUCTION_ENV else 9200
+AMAZON_ELASTIC_INDEX = "" if PRODUCTION_ENV else ""
+AMAZON_ELASTIC_DOC_TYPE = "" if PRODUCTION_ENV else ""
+AMAZON_ELASTIC_VALUES = "" if PRODUCTION_ENV else ""
+AMAZON_ELASTIC_USE_SSL = True
+AMAZON_ELASTIC_USERNAME = "elastic" if PRODUCTION_ENV else "elastic"
+AMAZON_ELASTIC_PASSWORD = "$EStest.813" if PRODUCTION_ENV else "$EStest.813"
+AMAZON_ELASTICSEARCH_URL = [{'host': AMAZON_ELASTIC_HOST, 'port': AMAZON_ELASTIC_PORT,
+                             'user_ssl': AMAZON_ELASTIC_USE_SSL,
+                      'http_auth': (AMAZON_ELASTIC_USERNAME, AMAZON_ELASTIC_PASSWORD)}] \
+    if PRODUCTION_ENV else "https://elastic:$EStest.813@es-fx731b5q.public.tencentelasticsearch.com:9200/"
+
 
 JWT_SECRET = "sercet"
 

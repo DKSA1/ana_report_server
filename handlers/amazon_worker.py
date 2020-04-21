@@ -1,9 +1,4 @@
-import json
-import asyncio
 from datetime import datetime, timedelta
-import emoji as emoji
-from sqlalchemy import create_engine, select, and_, update
-from sqlalchemy.dialects.mysql import insert
 from models.models import AmazonTaskResult, AmazonTask
 from config import *
 from util.log import logger
@@ -180,7 +175,7 @@ class AmazonBody:
 
 
 async def amazon_handle(group, task):
-
+    logger.info("amazon report task start")
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
 
@@ -189,7 +184,7 @@ async def amazon_handle(group, task):
     es = AmazonBody()
     search_body = es.create_search(task)
 
-    es_connection = Elasticsearch(hosts=ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+    es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
     index_result = await es_connection.search(
             index=task['index_name'],
             body=search_body,
@@ -247,41 +242,41 @@ async def amazon_handle(group, task):
                 db_session.commit()
             except:
                 db_session.rollback()
+    logger.info("amazon report task over")
 
-
-async def run():
-
-    with closing(db_session_mk(autocommit=True)) as db_session:
-        tasks = db_session.query(AmazonTask.task_id, AmazonTask.site, AmazonTask.index_name,
-                                 AmazonTask.save_result_numb, AmazonTask.context,
-                                 AmazonTask.order_by, AmazonTask.order, AmazonTask.type) \
-            .filter(AmazonTask.status == 0).all()
-
-    if tasks:
-        for task in tasks:
-            task_info = {
-                "task_id": task.task_id,
-                "type": task.type,
-                "site": task.site,
-                "condition": str(task.context),
-                "result_count": task.save_result_numb,
-                "order_by": task.order_by,
-                "order": task.order,
-                "index_name": task.index_name
-            }
-
-            nsq_msg = {
-                "task": "amazon_report_product",
-                "data": task_info
-            }
-
-        _ = await amazon_handle(None, task=nsq_msg)
-
-
-
-
-
-if __name__ == '__main__':
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(run())
+# async def run():
+#
+#     with closing(db_session_mk(autocommit=True)) as db_session:
+#         tasks = db_session.query(AmazonTask.task_id, AmazonTask.site, AmazonTask.index_name,
+#                                  AmazonTask.save_result_numb, AmazonTask.context,
+#                                  AmazonTask.order_by, AmazonTask.order, AmazonTask.type) \
+#             .filter(AmazonTask.status == 0).all()
+#
+#     if tasks:
+#         for task in tasks:
+#             task_info = {
+#                 "task_id": task.task_id,
+#                 "type": task.type,
+#                 "site": task.site,
+#                 "condition": str(task.context),
+#                 "result_count": task.save_result_numb,
+#                 "order_by": task.order_by,
+#                 "order": task.order,
+#                 "index_name": task.index_name
+#             }
+#
+#             nsq_msg = {
+#                 "task": "amazon_report_product",
+#                 "data": task_info
+#             }
+#
+#         _ = await amazon_handle(None, task=nsq_msg)
+#
+#
+#
+#
+#
+# if __name__ == '__main__':
+#
+#     loop = asyncio.get_event_loop()
+#     loop.run_until_complete(run())

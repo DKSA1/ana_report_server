@@ -276,7 +276,7 @@ async def ebay_handle(group, task):
         logger.info(json.dumps(search_body))
         logger.info("========================es请求体================================")
 
-        es_connection = Elasticsearch(hosts=ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+        es_connection = Elasticsearch(hosts=EBAY_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
 
         index_result = await es_connection.search(
             index=task['index_name'],
@@ -428,7 +428,7 @@ async def ebay_maintain_task():
             logger.info(json.dumps(search_body))
             logger.info("========================es请求体================================")
 
-            es_connection = Elasticsearch(hosts=ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+            es_connection = Elasticsearch(hosts=EBAY_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
 
             index_result = await es_connection.search(
                 index=task['index_name'],
