@@ -1,4 +1,5 @@
 import json
+import time
 
 from datetime import datetime, timedelta
 
@@ -422,21 +423,15 @@ async def ebay_handle(group, task):
         insert_stmt_msg = ins_msg.values(
             {
                 "user_id": task['user_id'],
-                "msg_id": task['task_id'],
+                "msg_id": task['user_id']+str(int(time.time())),
                 "msg_content": "您的报告" + task['report_name'] + "于" +
                                (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S') + msg_conteng,
                 "create_at": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
                 "status": 0
             }
         )
-        on_duplicate_key_stmt = insert_stmt_msg.on_duplicate_key_update(
-            user_id=insert_stmt_msg.inserted.user_id,
-            msg_id=insert_stmt_msg.inserted.msg_id,
-            msg_content=insert_stmt_msg.inserted.msg_content,
-            create_at=insert_stmt_msg.inserted.create_at,
-            status=insert_stmt_msg.inserted.status
-        )
-        result_msg = conn.execute(on_duplicate_key_stmt)
+
+        result_msg = conn.execute(insert_stmt_msg)
 
 # async def ebay_maintain_task():
 #     logger.info("connecting")
