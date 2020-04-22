@@ -160,6 +160,16 @@ ebay_user = Table(
     PrimaryKeyConstraint('id', name='pk')
 )
 
+ebay_user_msg = Table(
+    'ebay_user_msg', metadata,
+    Column('user_id', String(32), nullable=False, default=''),
+    Column('msg_id', String(256), nullable=False, default=''),
+    Column('msg_content', String(256), nullable=False, default=''),
+    Column('create_at', DateTime, nullable=False),
+    Column('status', TINYINT, nullable=False, default=0),
+    PrimaryKeyConstraint('user_id', 'msg_id', name='pk')
+)
+
 ebay_custom_report_task = Table(
     'ebay_custom_report_task', metadata,
     Column('task_id', String(32), nullable=False, default=''),
