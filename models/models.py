@@ -236,7 +236,7 @@ class AmazonTask(Base):
         site = Column(String(8))
         create_time = Column(TIMESTAMP, nullable=True)
         update_time = Column(TIMESTAMP, nullable=True)
-        report_chart = Column(String(8), nullable=True)
+        report_chart = Column(String(128), nullable=True)
         # 0=待执行， 1=执行中，2=成功，3=失败
         status = Column(Integer, nullable=False, default=0)
         save_result_numb = Column(Integer, nullable=True)

@@ -48,7 +48,8 @@ class TaskSaveToNsqScheduler:
                             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
                             ret = db_session.query(AmazonTask) \
                                 .filter(AmazonTask.task_id == task.task_id) \
-                                .update({AmazonTask.status: 1, AmazonTask.update_time: time_now},
+                                .update({AmazonTask.status: 1, AmazonTask.update_time: time_now,
+                                         AmazonTask.report_chart: "报告任务正在执行,请耐心等待~!"},
                                         synchronize_session=False)
                             try:
                                 db_session.commit()
@@ -56,4 +57,4 @@ class TaskSaveToNsqScheduler:
                                 db_session.rollback()
 
             logger.info("no task status=0, resting...")
-            await asyncio.sleep(10)
+            await asyncio.sleep(60)

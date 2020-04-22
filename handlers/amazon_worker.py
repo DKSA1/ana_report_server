@@ -1,9 +1,4 @@
-import json
-import asyncio
 from datetime import datetime, timedelta
-import emoji as emoji
-from sqlalchemy import create_engine, select, and_, update
-from sqlalchemy.dialects.mysql import insert
 from models.models import AmazonTaskResult, AmazonTask
 from config import *
 from util.log import logger
@@ -180,7 +175,7 @@ class AmazonBody:
 
 
 async def amazon_handle(group, task):
-
+    logger.info("amazon report task start")
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
 
@@ -189,7 +184,7 @@ async def amazon_handle(group, task):
     es = AmazonBody()
     search_body = es.create_search(task)
 
-    es_connection = Elasticsearch(hosts=ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+    es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
     index_result = await es_connection.search(
             index=task['index_name'],
             body=search_body,
@@ -226,7 +221,8 @@ async def amazon_handle(group, task):
                          AmazonTask.update_time: time_now,
                          AmazonTask.product_total: index_result['hits']['total']['value'],
                          AmazonTask.sold_total_7: index_result['aggregations']['sold_total_7']['value'],
-                         AmazonTask.gmv_total_7: index_result['aggregations']['gmv_total_7']['value']},
+                         AmazonTask.gmv_total_7: index_result['aggregations']['gmv_total_7']['value'],
+                         AmazonTask.report_chart: f"查询到{get_result_count}条满足条件的商品数据"},
                         synchronize_session=False)
 
             try:
@@ -239,13 +235,14 @@ async def amazon_handle(group, task):
             ret = db_session.query(AmazonTask) \
                 .filter(AmazonTask.task_id == task['task_id']) \
                 .update({AmazonTask.status: 3,
-                         AmazonTask.update_time: time_now},
+                         AmazonTask.update_time: time_now,
+                         AmazonTask.report_chart: "未查询到满足条件的商品,请检查设置条件是否正确"},
                         synchronize_session=False)
             try:
                 db_session.commit()
             except:
                 db_session.rollback()
-
+    logger.info("amazon report task over")
 
 # async def run():
 #
