@@ -271,17 +271,17 @@ engine = create_engine(
     max_overflow=SQLALCHEMY_POOL_MAX_OVERFLOW,
     pool_recycle=SQLALCHEMY_POOL_RECYCLE,
 )
-logger.info(SQLALCHEMY_DATABASE_URI)
+# logger.info(SQLALCHEMY_DATABASE_URI)
 
 
 async def ebay_handle(group, task):
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
-    logger.info("connecting")
+    # logger.info("connecting")
     task = hy_task.task_data
     time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
-        logger.info("connect success")
+        # logger.info("connect success")
         # task_datas = conn.execute(select([ebay_custom_report_task]).where(
         #     and_(
         #         ebay_custom_report_task.c.status == 0,
@@ -309,7 +309,7 @@ async def ebay_handle(group, task):
         name_ids = []
         # 构造品类IDS
         for item in the_es_result:
-            logger.info(item)
+            # logger.info(item)
             for category_id in item['_source']['leaf_category_id']:
                 name_ids.append(category_id)
         # 查出category_path
