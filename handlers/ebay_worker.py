@@ -167,8 +167,15 @@ class ESBody:
                             }
                         })  # HERE
 
+                # 品类过滤
+                # TODO:
+                if element['field'] == 'category':
+                    cid_list = element['value'].split('|')
+                    element_list.append({"term": {'category_id': {"value": cid_list[1]}}})
+                    # element_list.append({"term": {'category_id': {"value": element['value']}}})
+
                 # 基础条件: 商家,品牌,品类
-                if element['field'] == 'seller' or element['field'] == 'brand' or element['field'] == 'category_id':
+                if element['field'] == 'seller' or element['field'] == 'brand':
                     element_list.append({"term": {element['field']: {"value": element['value']}}})
 
                 # 数据条件
@@ -260,6 +267,7 @@ async def ebay_handle(group, task):
     task_log = [hy_task.task_type, hy_task.task_data]
     logger.info("connecting")
     task = hy_task.task_data
+    time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
         logger.info("connect success")
         # task_datas = conn.execute(select([ebay_custom_report_task]).where(
@@ -349,7 +357,7 @@ async def ebay_handle(group, task):
                 "cvr": item['_source']['sold_last_1'] / item['_source']['visit_last_1'] if item['_source'][
                                                                                                'visit_last_1'] != 0 else 0,
                 "date": (datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
-                "update_time": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+                "update_time": time_now
             }
             # logger.info(result_info)
 
@@ -383,7 +391,7 @@ async def ebay_handle(group, task):
                 ins = update(ebay_custom_report_task)
                 ins = ins.values({
                     "status": 1,
-                    "update_time": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
+                    "update_time": time_now,
                     "get_result_count": get_result_count,
                     "product_total": index_result['hits']['total']['value'],
                     "sold_total": index_result['aggregations']['sold_total']['value']
@@ -398,7 +406,7 @@ async def ebay_handle(group, task):
                 ins = update(ebay_custom_report_task)
                 ins = ins.values({
                     "status": 2,
-                    "update_time": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
+                    "update_time": time_now,
                     "get_result_count": get_result_count,
                     "product_total": index_result['hits']['total']['value'],
                     "sold_total": index_result['aggregations']['sold_total']['value']
@@ -425,8 +433,8 @@ async def ebay_handle(group, task):
                 "user_id": task['user_id'],
                 "msg_id": task['user_id']+str(int(time.time())),
                 "msg_content": "您的报告" + task['report_name'] + "于" +
-                               (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S') + msg_conteng,
-                "create_at": (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S'),
+                               time_now + msg_conteng,
+                "create_at": time_now,
                 "status": 0
             }
         )
