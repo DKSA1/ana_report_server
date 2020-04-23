@@ -86,11 +86,23 @@ class ESBody:
 
         # 排序条件
         if task_params['order_by'] and task_params['order']:
-            self.search_body['sort'][0] = {
-                task_params['order_by']: {
-                    "order": task_params['order']
-                }
+            order_dict = {
+                'sold': 'sold_last_1',
+                'gmv': 'gmv_last_1',
+                'visit': 'visit_last_1'
             }
+            if task_params['order_by'] in order_dict:
+                self.search_body['sort'][0] = {
+                    order_dict[task_params['order_by']]: {
+                        "order": task_params['order']
+                    }
+                }
+            else:
+                self.search_body['sort'][0] = {
+                    task_params['order_by']: {
+                        "order": task_params['order']
+                    }
+                }
 
         # 结果数限制
         self.search_body['size'] = task_params['result_count'] if task_params['result_count'] else 50
