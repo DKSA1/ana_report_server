@@ -222,7 +222,8 @@ async def amazon_handle(group, task):
                          AmazonTask.product_total: index_result['hits']['total']['value'],
                          AmazonTask.sold_total_7: index_result['aggregations']['sold_total_7']['value'],
                          AmazonTask.gmv_total_7: index_result['aggregations']['gmv_total_7']['value'],
-                         AmazonTask.report_chart: f"查询到{get_result_count}条满足条件的商品数据"},
+                         AmazonTask.report_chart: f"查询到{index_result['hits']['total']['value']}条满足条件的商品数据",
+                         AmazonTask.get_result_count: get_result_count},
                         synchronize_session=False)
 
             try:

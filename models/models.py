@@ -259,6 +259,7 @@ class AmazonTask(Base):
         gmv_total_7 = Column(DECIMAL(10, 2), default=0)
         type = Column(String(32))
         index_name = Column(String(32))
+        get_result_count = Column(Integer)
 
 
 class AmazonTaskResult(Base):
