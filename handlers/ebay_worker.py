@@ -444,7 +444,7 @@ async def ebay_handle(group, task):
             {
                 "user_id": task['user_id'],
                 "msg_id": task['user_id']+str(int(time.time())),
-                "msg_content": "您的报告" + task['report_name'] + "于" +
+                "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
                                time_now + msg_conteng,
                 "create_at": time_now,
                 "status": 0
