@@ -17,8 +17,8 @@ class TaskSaveToNsqScheduler:
             with closing(self.db_session_mk()) as db_session:
 
                 tasks = db_session.query(AmazonTask.task_id, AmazonTask.site, AmazonTask.index_name,
-                                         AmazonTask.save_result_numb, AmazonTask.context,
-                                         AmazonTask.order_by, AmazonTask.order, AmazonTask.type) \
+                                         AmazonTask.save_result_numb, AmazonTask.context, AmazonTask.user_id,
+                                         AmazonTask.order_by, AmazonTask.order, AmazonTask.type, AmazonTask.report_name) \
                     .filter(AmazonTask.status == 0).all()
 
                 if tasks:
@@ -31,7 +31,9 @@ class TaskSaveToNsqScheduler:
                             "result_count": task.save_result_numb,
                             "order_by": task.order_by,
                             "order": task.order,
-                            "index_name": task.index_name
+                            "index_name": task.index_name,
+                            "user_id": task.user_id,
+                            "report_name": task.report_name
                         }
 
                         nsq_topic = AMAZON_REPORT_TASK_TOPIC

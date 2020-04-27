@@ -282,3 +282,15 @@ class AmazonTaskResult(Base):
         sold_last_30 = Column(Integer)
         gmv_last_30 = Column(DECIMAL(12, 2), default=0)
         review_score = Column(DECIMAL(8, 2), default=0)
+
+
+class AnaUserMsg(Base):
+    __tablename__ = 'ana_user_msg'
+    __table_args__ = (
+        PrimaryKeyConstraint('user_id', 'msg_id', name='PK_id'),
+    )
+    user_id = Column(String(32), nullable=False)
+    msg_id = Column(String(256), default='')
+    msg_content = Column(String(256), nullable=False, default='')
+    create_at = Column(TIMESTAMP, nullable=False)
+    status = Column(Integer, nullable=True)

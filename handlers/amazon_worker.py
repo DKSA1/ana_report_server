@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
-from models.models import AmazonTaskResult, AmazonTask
+from models.models import AmazonTaskResult, AmazonTask, AnaUserMsg
 from config import *
+import time
 from util.log import logger
 from util.task_protocol import ANATask
 
@@ -183,13 +184,25 @@ async def amazon_handle(group, task):
 
     es = AmazonBody()
     search_body = es.create_search(task)
-
-    es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
-    index_result = await es_connection.search(
-            index=task['index_name'],
-            body=search_body,
-            size=task['result_count'])
-
+    try:
+        es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+        index_result = await es_connection.search(
+                index=task['index_name'],
+                body=search_body,
+                size=task['result_count'])
+    except Exception as e:
+        with closing(db_session_mk(autocommit=True)) as db_session:
+            time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+            ret = db_session.query(AmazonTask) \
+                .filter(AmazonTask.task_id == task['task_id']) \
+                .update({AmazonTask.status: 3,
+                         AmazonTask.update_time: time_now,
+                         AmazonTask.report_chart: "查询失败请检查条件是否正确,若条件无误请重新保存任务或联系客服"},
+                        synchronize_session=False)
+            try:
+                db_session.commit()
+            except:
+                db_session.rollback()
     get_result_count = 0
     with closing(db_session_mk(autocommit=True)) as db_session:
         if index_result['hits']['hits']:
@@ -243,6 +256,18 @@ async def amazon_handle(group, task):
                 db_session.commit()
             except:
                 db_session.rollback()
+                
+        m = AnaUserMsg()
+        m.user_id = task["user_id"]
+        m.msg_id = task['user_id']+str(int(time.time())),
+        m.msg_content = "您的Amazon自定义报告《" + task['report_name'] + "》于" + time_now + "完成,请及时查看报告结果",
+        m.create_at = time_now
+        m.status = 0
+        db_session.add(m)
+        try:
+            db_session.commit()
+        except:
+            db_session.rollback()
     logger.info("amazon report task over")
 
 # async def run():
