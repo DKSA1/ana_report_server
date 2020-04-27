@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, select, and_, update
 from sqlalchemy.dialects.mysql import insert
 
 import pipeflow
-from models.models import ebay_custom_report_task, ebay_category, ebay_product_report_result, ebay_user_msg
+from models.models import ebay_custom_report_task, ebay_category, ebay_product_report_result, ana_user_msg
 from pipeflow import NsqInputEndpoint
 from config import *
 from util.log import logger
@@ -439,7 +439,7 @@ async def ebay_handle(group, task):
         elif records_status['status'] == 2:
             msg_conteng = "生成失败,请重新编辑条件或联系网站管理员!"
         # 添加消息通知
-        ins_msg = insert(ebay_user_msg)
+        ins_msg = insert(ana_user_msg)
         insert_stmt_msg = ins_msg.values(
             {
                 "user_id": task['user_id'],

@@ -160,8 +160,8 @@ ebay_user = Table(
     PrimaryKeyConstraint('id', name='pk')
 )
 
-ebay_user_msg = Table(
-    'ebay_user_msg', metadata,
+ana_user_msg = Table(
+    'ana_user_msg', metadata,
     Column('user_id', String(32), nullable=False, default=''),
     Column('msg_id', String(256), nullable=False, default=''),
     Column('msg_content', String(256), nullable=False, default=''),
