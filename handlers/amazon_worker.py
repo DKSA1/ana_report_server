@@ -219,9 +219,9 @@ async def amazon_handle(group, task):
                 t.price = result_value['_source']["price"]
                 t.top_category_rank = result_value['_source']["top_category_rank"]
                 t.sold_last_7 = result_value['_source']["sold_last_7"]
-                t.gmv_last_7 = result_value['_source']["gmv_last_7"]
+                t.gmv_last_7 = round(result_value['_source']["gmv_last_7"], 2)
                 t.sold_last_30 = result_value['_source']["sold_last_30"]
-                t.gmv_last_30 = result_value['_source']["gmv_last_30"]
+                t.gmv_last_30 = round(result_value['_source']["gmv_last_30"], 2)
                 t.review_score = result_value['_source']["review_score"]
 
                 db_session.add(t)
@@ -234,7 +234,7 @@ async def amazon_handle(group, task):
                          AmazonTask.update_time: time_now,
                          AmazonTask.product_total: index_result['hits']['total']['value'],
                          AmazonTask.sold_total_7: index_result['aggregations']['sold_total_7']['value'],
-                         AmazonTask.gmv_total_7: index_result['aggregations']['gmv_total_7']['value'],
+                         AmazonTask.gmv_total_7: round(index_result['aggregations']['gmv_total_7']['value'], 2),
                          AmazonTask.report_chart: f"查询到{index_result['hits']['total']['value']}条满足条件的商品数据",
                          AmazonTask.get_result_count: get_result_count},
                         synchronize_session=False)
