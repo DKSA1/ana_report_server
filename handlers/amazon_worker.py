@@ -259,7 +259,7 @@ async def amazon_handle(group, task):
                 
         m = AnaUserMsg()
         m.user_id = task["user_id"]
-        m.msg_id = task['user_id']+str(int(time.time())),
+        m.msg_id = str(task['user_id'])+str(int(time.time())),
         m.msg_content = "您的Amazon自定义报告《" + task['report_name'] + "》于" + time_now + "完成,请及时查看报告结果",
         m.create_at = time_now
         m.status = 0
