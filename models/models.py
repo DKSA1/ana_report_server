@@ -256,7 +256,7 @@ class AmazonTask(Base):
         methods = Column(String(512))
         product_total = Column(Integer, default=0)
         sold_total_7 = Column(Integer, default=0)
-        gmv_total_7 = Column(DECIMAL(10, 2), default=0)
+        gmv_total_7 = Column(DECIMAL(12, 2), default=0)
         type = Column(String(32))
         index_name = Column(String(32))
         get_result_count = Column(Integer)
