@@ -251,7 +251,8 @@ async def amazon_handle(group, task):
 
             try:
                 db_session.commit()
-            except:
+            except Exception as e:
+                logger.info(e)
                 db_session.rollback()
 
         else:
@@ -273,18 +274,18 @@ async def amazon_handle(group, task):
             logger.info("*************************Amazon 报告消息写入成功*************************")
             try:
                 db_session.commit()
-            except:
+            except Exception as e:
+                logger.info(e)
                 db_session.rollback()
 
     logger.info("amazon report task over")
 
 # async def run():
 #
-#     with closing(db_session_mk(autocommit=True)) as db_session:
-#         tasks = db_session.query(AmazonTask.task_id, AmazonTask.site, AmazonTask.index_name,
-#                                  AmazonTask.save_result_numb, AmazonTask.context,
-#                                  AmazonTask.order_by, AmazonTask.order, AmazonTask.type) \
-#             .filter(AmazonTask.status == 0).all()
+#     tasks = db_session.query(AmazonTask.task_id, AmazonTask.site, AmazonTask.index_name,
+#                              AmazonTask.save_result_numb, AmazonTask.context, AmazonTask.user_id,
+#                              AmazonTask.order_by, AmazonTask.order, AmazonTask.type, AmazonTask.report_name) \
+#                     .filter(AmazonTask.status == 0).all()
 #
 #     if tasks:
 #         for task in tasks:
@@ -296,13 +297,10 @@ async def amazon_handle(group, task):
 #                 "result_count": task.save_result_numb,
 #                 "order_by": task.order_by,
 #                 "order": task.order,
-#                 "index_name": task.index_name
-#             }
-#
-#             nsq_msg = {
-#                 "task": "amazon_report_product",
-#                 "data": task_info
-#             }
+#                 "index_name": task.index_name,
+#                 "user_id": task.user_id,
+#                 "report_name": task.report_name
+#                         }
 #
 #         _ = await amazon_handle(None, task=nsq_msg)
 #
@@ -313,4 +311,4 @@ async def amazon_handle(group, task):
 # if __name__ == '__main__':
 #
 #     loop = asyncio.get_event_loop()
-#     loop.run_until_complete(run())
+#     loop.run_until_complete(run(db_session_mk))
