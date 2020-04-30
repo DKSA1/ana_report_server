@@ -239,6 +239,16 @@ async def amazon_handle(group, task):
                          AmazonTask.get_result_count: get_result_count},
                         synchronize_session=False)
 
+            print("*************************Amazon 报告消息正在写入*************************")
+            m = AnaUserMsg()
+            m.user_id = task["user_id"]
+            m.msg_id = str(task['user_id']) + str(int(time.time())),
+            m.msg_content = "您的Amazon自定义报告《" + task['report_name'] + "》于" + time_now + "完成,请及时查看报告结果",
+            m.create_at = time_now
+            m.status = 0
+            db_session.add(m)
+            print("*************************Amazon 报告消息写入成功*************************")
+
             try:
                 db_session.commit()
             except:
@@ -252,23 +262,20 @@ async def amazon_handle(group, task):
                          AmazonTask.update_time: time_now,
                          AmazonTask.report_chart: "未查询到满足条件的商品,请检查设置条件是否正确"},
                         synchronize_session=False)
+            print("*************************Amazon 报告消息正在写入*************************")
+            m = AnaUserMsg()
+            m.user_id = task["user_id"]
+            m.msg_id = str(task['user_id']) + str(int(time.time())),
+            m.msg_content = "您的Amazon自定义报告《" + task['report_name'] + "》于" + time_now + "完成,请及时查看报告结果",
+            m.create_at = time_now
+            m.status = 0
+            db_session.add(m)
+            print("*************************Amazon 报告消息写入成功*************************")
             try:
                 db_session.commit()
             except:
                 db_session.rollback()
-        print("*************************Amazon 报告消息正在写入*************************")
-        m = AnaUserMsg()
-        m.user_id = task["user_id"]
-        m.msg_id = str(task['user_id'])+str(int(time.time())),
-        m.msg_content = "您的Amazon自定义报告《" + task['report_name'] + "》于" + time_now + "完成,请及时查看报告结果",
-        m.create_at = time_now
-        m.status = 0
-        db_session.add(m)
-        print("*************************Amazon 报告消息写入成功*************************")
-        try:
-            db_session.commit()
-        except:
-            db_session.rollback()
+
     logger.info("amazon report task over")
 
 # async def run():
