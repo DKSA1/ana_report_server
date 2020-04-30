@@ -25,15 +25,24 @@ class AmazonBody:
         self.search_body = {
             "query": {
                 "bool": {
+                    "filter": [],
                     "must": [
                         {
-                            "bool": {
-                                "should": [
-
-                                ]
+                            "range": {
+                                "price": {
+                                    "gt": 0
+                                }
+                            }
+                        },
+                        {
+                            "range": {
+                                "sold_last_30": {
+                                    "gt": 0
+                                }
                             }
                         }
-                    ]
+                    ],
+                    "must_not": []
                 }
             },
             "aggs": {
