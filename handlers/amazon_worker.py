@@ -23,6 +23,7 @@ WORKER_NUMBER = 1
 class AmazonBody:
     def __init__(self):
         self.search_body = {
+            "track_total_hits": True,
             "query": {
                 "bool": {
                     "filter": [],
@@ -87,7 +88,7 @@ class AmazonBody:
         self.search_body['size'] = task_params['result_count'] if task_params['result_count'] else 50
 
         # 过滤site
-        self.search_body['query']['bool']['must'].append({"term":{"site":{"value":task_params['site']}}})
+        self.search_body['query']['bool']['must'].append({"term": {"site": {"value": task_params['site']}}})
 
         for group in eval(task_params['condition']):
             element_list = []

@@ -59,4 +59,4 @@ class TaskSaveToNsqScheduler:
                                 db_session.rollback()
 
             logger.info("no task status=0, resting...")
-            await asyncio.sleep(60)
+            await asyncio.sleep(15)
