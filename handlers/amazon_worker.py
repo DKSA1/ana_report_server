@@ -256,7 +256,7 @@ async def amazon_handle(group, task):
                 db_session.commit()
             except:
                 db_session.rollback()
-                
+        print("*************************Amazon 报告消息正在写入*************************")
         m = AnaUserMsg()
         m.user_id = task["user_id"]
         m.msg_id = str(task['user_id'])+str(int(time.time())),
