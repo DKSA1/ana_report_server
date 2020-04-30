@@ -106,43 +106,8 @@ class AmazonBody:
 
         for group in eval(task_params['condition']):
             element_list = []
-            not_list = []
+            # not_list = []
             for element in group:
-                # # 七天销量判断
-                # if element['field'] == 'sold_last_7' and element['field'] != '=':
-                #     element_list.append(
-                #         {"range": {"sold_last_7": {self.element_symbol[element['field']]: element['value']}}}
-                #     )
-                # # 七天销售额判断
-                # if element['field'] == 'gmv_last_7' and element['field'] != '=':
-                #     element_list.append(
-                #         {"range": {"gmv_last_7": {self.element_symbol[element['field']]: element['value']}}}
-                #     )
-                # # 30天销量判断
-                # if element['field'] == 'sold_last_30' and element['field'] != '=':
-                #     element_list.append(
-                #         {"range": {"sold_last_30": {self.element_symbol[element['field']]: element['value']}}}
-                #     )
-                # # 30天销售额判断
-                # if element['field'] == 'gmv_last_30' and element['field'] != '=':
-                #     element_list.append(
-                #         {"range": {"gmv_last_30": {self.element_symbol[element['field']]: element['value']}}}
-                #     )
-                # # 单价判断
-                # if element['field'] == 'price' and element['field'] != '=':
-                #     element_list.append(
-                #         {"range": {"price": {self.element_symbol[element['field']]: element['value']}}}
-                #     )
-                # # 评分判断
-                # if element['field'] == 'review_score' and element['field'] != '=':
-                #     element_list.append(
-                #         {"range": {"review_score": {self.element_symbol[element['field']]: element['value']}}}
-                #     )
-                # # 评论数判断
-                # if element['field'] == 'review_number' and element['field'] != '=':
-                #     element_list.append(
-                #         {"range": {"review_number": {self.element_symbol[element['field']]: element['value']}}}
-                #     )
 
                 # 基础条件: 商家,品牌,品类
                 if element['field'] in self.element_e:
@@ -167,19 +132,19 @@ class AmazonBody:
                         "multi_match": {"query": element['value'], "fuzziness": "AUTO",
                                         "minimum_should_match": "2<70%"}})
 
-            if not_list:
-                self.search_body['query']['bool']['must'][0]['bool']['should'].append({
-                    "bool": {
-                        "must": element_list,
-                        "must_not": not_list
-                    }
-                })
-            else:
-                self.search_body['query']['bool']['must'][0]['bool']['should'].append({
-                    "bool": {
-                        "must": element_list
-                    }
-                })
+            # if not_list:
+            #     self.search_body['query']['bool']['must'][0]['bool']['should'].append({
+            #         "bool": {
+            #             "must": element_list,
+            #             "must_not": not_list
+            #         }
+            #     })
+            # else:
+            #     self.search_body['query']['bool']['must'][0]['bool']['should'].append({
+            #         "bool": {
+            #             "must": element_list
+            #         }
+            #     })
 
         return self.search_body
 
@@ -192,8 +157,8 @@ async def amazon_handle(group, task):
     task = hy_task.task_data
 
     es = AmazonBody()
-    search_body = es.create_search(task)
     try:
+        search_body = es.create_search(task)
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
         index_result = await es_connection.search(
                 index=task['index_name'],
