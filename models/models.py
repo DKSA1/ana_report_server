@@ -290,7 +290,7 @@ class AnaUserMsg(Base):
         PrimaryKeyConstraint('user_id', 'msg_id', name='PK_id'),
     )
     user_id = Column(String(32), nullable=False)
-    msg_id = Column(String(256), default='')
-    msg_content = Column(String(256), nullable=False, default='')
+    msg_id = Column(String(32), default='')
+    msg_content = Column(String(255), nullable=False, default='')
     create_at = Column(TIMESTAMP, nullable=False)
     status = Column(Integer, nullable=True)
