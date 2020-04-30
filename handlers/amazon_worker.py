@@ -26,22 +26,7 @@ class AmazonBody:
             "query": {
                 "bool": {
                     "filter": [],
-                    "must": [
-                        {
-                            "range": {
-                                "price": {
-                                    "gt": 0
-                                }
-                            }
-                        },
-                        {
-                            "range": {
-                                "sold_last_30": {
-                                    "gt": 0
-                                }
-                            }
-                        }
-                    ],
+                    "must": [],
                     "must_not": []
                 }
             },
