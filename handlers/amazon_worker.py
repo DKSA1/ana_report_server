@@ -204,7 +204,7 @@ async def amazon_handle(group, task):
             except:
                 db_session.rollback()
     get_result_count = 0
-    with closing(db_session_mk(autocommit=True)) as db_session:
+    with closing(db_session_mk(autocommit=False)) as db_session:
         if index_result['hits']['hits']:
             for result_value in index_result['hits']['hits']:
                 #  插入商品信息
