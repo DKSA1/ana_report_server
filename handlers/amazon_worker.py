@@ -264,6 +264,7 @@ async def amazon_handle(group, task):
         m.create_at = time_now
         m.status = 0
         db_session.add(m)
+        print("*************************Amazon 报告消息写入成功*************************")
         try:
             db_session.commit()
         except:
