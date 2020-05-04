@@ -173,10 +173,10 @@ async def amazon_handle(group, task):
                 t.task_id = task['task_id']
                 t.asin = result_value['_source']["asin"]
                 t.img = result_value['_source']["img"]
-                t.title = emoji.demojize(result_value['_source']["title"]),
+                t.title = emoji.demojize(result_value['_source']["title"])
                 t.site = result_value['_source']["site"]
                 t.brand = result_value['_source']["brand"]
-                t.merchant_name = result_value['_source']["merchant_name"]
+                t.merchant_name = emoji.demojize(result_value['_source']["merchant_name"])
                 t.price = result_value['_source']["price"]
                 t.top_category_rank = result_value['_source']["top_category_rank"]
                 t.sold_last_7 = result_value['_source']["sold_last_7"]
