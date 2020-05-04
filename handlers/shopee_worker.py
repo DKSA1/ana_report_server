@@ -8,7 +8,7 @@ from sqlalchemy import create_engine, select, and_, update
 from sqlalchemy.dialects.mysql import insert
 
 import pipeflow
-from models.models import ebay_custom_report_task, ebay_category, ebay_product_report_result, ana_user_msg
+from models.models import shopee_custom_report_task, shopee_category, shopee_product_report_result, ana_user_msg
 from pipeflow import NsqInputEndpoint
 from config import *
 from util.log import logger
@@ -314,14 +314,14 @@ async def ebay_handle(group, task):
                 name_ids.append(category_id)
         # 查出category_path
         select_category_name = select([
-            ebay_category.c.category_name,
-            ebay_category.c.category_id,
-            ebay_category.c.category_id_path,
-            ebay_category.c.category_name_path
+            shopee_category.c.category_name,
+            shopee_category.c.category_id,
+            shopee_category.c.category_id_path,
+            shopee_category.c.category_name_path
         ]).where(
             and_(
-                ebay_category.c.category_id.in_(name_ids),
-                ebay_category.c.site == task['site']
+                shopee_category.c.category_id.in_(name_ids),
+                shopee_category.c.site == task['site']
             ))
         cursor_name = conn.execute(select_category_name)
         records_name = cursor_name.fetchall()
@@ -375,24 +375,24 @@ async def ebay_handle(group, task):
 
             # 插入商品信息
             try:
-                ins = insert(ebay_product_report_result)
+                ins = insert(shopee_product_report_result)
                 insert_stmt = ins.values(result_info)
                 on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
                     task_id=insert_stmt.inserted.task_id,
-                    item_id=insert_stmt.inserted.item_id,
+                    pid=insert_stmt.inserted.pid,
                     img=insert_stmt.inserted.img,
                     title=insert_stmt.inserted.title,
                     site=insert_stmt.inserted.site,
-                    brand=insert_stmt.inserted.brand,
+                    merchant_name=insert_stmt.inserted.merchant_name,
                     category_path=insert_stmt.inserted.category_path,
-                    store_location=insert_stmt.inserted.store_location,
-                    gmv_last_3_pop=insert_stmt.inserted.gmv_last_3_pop,
+                    shop_location=insert_stmt.inserted.shop_location,
+                    price=insert_stmt.inserted.price,
                     gmv_last_3=insert_stmt.inserted.gmv_last_3,
-                    gmv_last_1=insert_stmt.inserted.gmv_last_1,
-                    sold_last_1=insert_stmt.inserted.sold_last_1,
+                    gmv_last_7=insert_stmt.inserted.gmv_last_7,
+                    sold_last_7=insert_stmt.inserted.sold_last_7,
                     sold_last_3=insert_stmt.inserted.sold_last_3,
-                    visit=insert_stmt.inserted.visit,
-                    cvr=insert_stmt.inserted.cvr,
+                    product_count=insert_stmt.inserted.product_count,
+                    review_score=insert_stmt.inserted.review_score,
                     date=insert_stmt.inserted.date,
                 )
                 result = conn.execute(on_duplicate_key_stmt)
@@ -400,7 +400,7 @@ async def ebay_handle(group, task):
                 get_result_count += 1
 
                 # 更新任务状态
-                ins = update(ebay_custom_report_task)
+                ins = update(shopee_custom_report_task)
                 ins = ins.values({
                     "status": 1,
                     "update_time": time_now,
@@ -408,14 +408,14 @@ async def ebay_handle(group, task):
                     "product_total": index_result['hits']['total']['value'],
                     "sold_total": index_result['aggregations']['sold_total']['value']
                 }).where(
-                    ebay_custom_report_task.c.task_id == task['task_id']
+                    shopee_custom_report_task.c.task_id == task['task_id']
                 )
                 result = conn.execute(ins)
                 # logger.info(result)
             except Exception as e:
                 logger.info(e)
                 # 更新任务状态
-                ins = update(ebay_custom_report_task)
+                ins = update(shopee_custom_report_task)
                 ins = ins.values({
                     "status": 2,
                     "update_time": time_now,
@@ -423,14 +423,14 @@ async def ebay_handle(group, task):
                     "product_total": index_result['hits']['total']['value'],
                     "sold_total": index_result['aggregations']['sold_total']['value']
                 }).where(
-                    ebay_custom_report_task.c.task_id == task['task_id']
+                    shopee_custom_report_task.c.task_id == task['task_id']
                 )
                 result = conn.execute(ins)
                 # logger.info(result)
 
         # 查询DB,验证任务状态,发送消息通知
-        select_task_status = select([ebay_custom_report_task.c.status]).where(
-            ebay_custom_report_task.c.task_id == task['task_id']
+        select_task_status = select([shopee_custom_report_task.c.status]).where(
+            shopee_custom_report_task.c.task_id == task['task_id']
         )
         cursor_status = conn.execute(select_task_status)
         records_status = cursor_status.fetchone()
@@ -452,22 +452,3 @@ async def ebay_handle(group, task):
         )
 
         result_msg = conn.execute(insert_stmt_msg)
-
-
-# def run():
-#     input_end = NsqInputEndpoint(TOPIC_NAME, 'ebay_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
-#     logger.info('连接nsq成功,topic_name = {}, nsq_address={}'.format(TOPIC_NAME, INPUT_NSQ_CONF))
-#     server = pipeflow.Server()
-#     logger.info("pipeflow开始工作")
-#     group = server.add_group('main', WORKER_NUMBER)
-#     logger.info("抓取任务")
-#     group.set_handle(ebay_handle)
-#     logger.info("处理任务")
-#     group.add_input_endpoint('input', input_end)
-#
-#     server.add_routine_worker(ebay_maintain_task, interval=5, immediately=True)
-#     server.run()
-
-
-# if __name__ == '__main__':
-#     run()
