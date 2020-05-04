@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from models.models import AmazonTaskResult, AmazonTask, AnaUserMsg
 from config import *
 import time
+import emoji as emoji
 from util.log import logger
 from util.task_protocol import ANATask
 
@@ -172,7 +173,7 @@ async def amazon_handle(group, task):
                 t.task_id = task['task_id']
                 t.asin = result_value['_source']["asin"]
                 t.img = result_value['_source']["img"]
-                t.title = result_value['_source']["title"]
+                t.title = emoji.demojize(result_value['_source']["title"]),
                 t.site = result_value['_source']["site"]
                 t.brand = result_value['_source']["brand"]
                 t.merchant_name = result_value['_source']["merchant_name"]
