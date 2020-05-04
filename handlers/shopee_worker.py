@@ -226,42 +226,6 @@ class ESBody:
         return self.search_body
 
 
-# async def redis_get_index():
-#     redis = await aioredis.create_redis_pool(
-#         address=REDIS_URL, password=REDIS_PASSWORD)
-#
-#     if PRODUCTION_ENV:
-#         value = await redis.hgetall('ebay:product:batch_date', encoding='utf-8')
-#     else:
-#         value = await redis.hgetall('test:product:batch_date', encoding='utf-8')
-#     if len(value) > 1:
-#         key_list = []
-#         for key, value in value.items():
-#             if value == '1':
-#                 key_list.append(datetime.strptime(key, '%Y-%m-%d'))
-#         key_time = sorted(key_list)[-1]
-#         key_time = datetime.strftime(key_time, '%Y-%m-%d')
-#     elif len(value) == 1:
-#         key_time = [x for x in value.keys()][0]
-#         key_time = datetime.strftime(key_time, '%Y-%m-%d')
-#     else:
-#         logger.info("Can't get the es_index name")
-#         key_time = '2020-04-07'
-#     index_name = "ebay_product_" + key_time
-#     return index_name
-
-
-# engine = create_engine(
-#     # pool_pre_ping=SQLALCHEMY_POOL_PRE_PING,
-#     echo=SQLALCHEMY_ECHO,
-#     # pool_size=SQLALCHEMY_POOL_SIZE,
-#     # max_overflow=SQLALCHEMY_POOL_MAX_OVERFLOW,
-#     pool_recycle=SQLALCHEMY_POOL_RECYCLE,
-#     autocommit=True,
-#     user=DB_USER_NAME, db=DB_DATABASE_NAME,
-#     host=DB_SEVER_ADDR, port=DB_SEVER_PORT, password=DB_USER_PW,
-#     maxsize=10)
-
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URI,
@@ -271,26 +235,18 @@ engine = create_engine(
     max_overflow=SQLALCHEMY_POOL_MAX_OVERFLOW,
     pool_recycle=SQLALCHEMY_POOL_RECYCLE,
 )
-# logger.info(SQLALCHEMY_DATABASE_URI)
+
+
 
 
 async def ebay_handle(group, task):
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
-    # logger.info("connecting")
     task = hy_task.task_data
     time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
-        # logger.info("connect success")
-        # task_datas = conn.execute(select([ebay_custom_report_task]).where(
-        #     and_(
-        #         ebay_custom_report_task.c.status == 0,
-        #         ebay_custom_report_task.c.type == "product"
-        #         # ebay_custom_report_task.c.task_id == "bailuntec1586329016"
-        #     )
-        # ))
+
         es = ESBody()
-        # # logger.info(task_datas)
         # # 逐个任务完成查询es写入db
         search_body = es.create_search(task)
         logger.info("========================es请求体================================")
@@ -303,13 +259,11 @@ async def ebay_handle(group, task):
             index=task['index_name'],
             body=search_body,
             size=task['result_count'])
-        # logger.info(index_result)
         # 报告商品结果列表
         the_es_result = index_result['hits']['hits']
         name_ids = []
         # 构造品类IDS
         for item in the_es_result:
-            # logger.info(item)
             for category_id in item['_source']['leaf_category_id']:
                 name_ids.append(category_id)
         # 查出category_path
@@ -332,7 +286,6 @@ async def ebay_handle(group, task):
         for db_info in records_name:
             for category in the_es_result:
                 for low_id in category['_source']['leaf_category_id']:
-                    # logger.info(low_id)
                     if low_id == db_info['category_id']:
                         name_list = db_info['category_name_path'].split(':')
                         id_list = db_info['category_id_path'].split(':')
@@ -352,26 +305,24 @@ async def ebay_handle(group, task):
             # 构造商品dict
             result_info = {
                 "task_id": task['task_id'],
-                "item_id": item['_source']['item_id'],
+                "pid": item['_source']['pid'],
                 "img": item['_source']['img'],
                 "title": emoji.demojize(item['_source']['title']),
                 "site": item['_source']['site'],
-                "brand": item['_source']['brand'],
+                "merchant_name": item['_source']['merchant_name'],
                 # 需要构造
                 "category_path": str(item['_source']['category_path']),
-                "store_location": item['_source']['store_location'],
-                "gmv_last_3_pop": item['_source']['gmv_last_3_pop'],
+                "shop_location": item['_source']['shop_location'],
+                "price": item['_source']['price'],
                 "gmv_last_3": item['_source']['gmv_last_3'],
-                "gmv_last_1": item['_source']['gmv_last_1'],
-                "sold_last_1": item['_source']['sold_last_1'],
+                "gmv_last_7": item['_source']['gmv_last_7'],
+                "sold_last_7": item['_source']['sold_last_7'],
                 "sold_last_3": item['_source']['sold_last_3'],
-                "visit": item['_source']['visit_last_1'],
-                "cvr": item['_source']['sold_last_1'] / item['_source']['visit_last_1'] if item['_source'][
-                                                                                               'visit_last_1'] != 0 else 0,
+                "sold_total": item['_source']['sold_total'],
+                "review_score": item['_source']['review_score'],
                 "date": (datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
                 "update_time": time_now
             }
-            # logger.info(result_info)
 
             # 插入商品信息
             try:
@@ -391,12 +342,11 @@ async def ebay_handle(group, task):
                     gmv_last_7=insert_stmt.inserted.gmv_last_7,
                     sold_last_7=insert_stmt.inserted.sold_last_7,
                     sold_last_3=insert_stmt.inserted.sold_last_3,
-                    product_count=insert_stmt.inserted.product_count,
+                    sold_total=insert_stmt.inserted.sold_total,
                     review_score=insert_stmt.inserted.review_score,
                     date=insert_stmt.inserted.date,
                 )
                 result = conn.execute(on_duplicate_key_stmt)
-                # logger.info(result)
                 get_result_count += 1
 
                 # 更新任务状态
@@ -411,7 +361,6 @@ async def ebay_handle(group, task):
                     shopee_custom_report_task.c.task_id == task['task_id']
                 )
                 result = conn.execute(ins)
-                # logger.info(result)
             except Exception as e:
                 logger.info(e)
                 # 更新任务状态
@@ -426,7 +375,6 @@ async def ebay_handle(group, task):
                     shopee_custom_report_task.c.task_id == task['task_id']
                 )
                 result = conn.execute(ins)
-                # logger.info(result)
 
         # 查询DB,验证任务状态,发送消息通知
         select_task_status = select([shopee_custom_report_task.c.status]).where(
@@ -443,8 +391,8 @@ async def ebay_handle(group, task):
         insert_stmt_msg = ins_msg.values(
             {
                 "user_id": task['user_id'],
-                "msg_id": task['user_id']+str(int(time.time())),
-                "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
+                "msg_id": task['user_id'] + str(int(time.time())),
+                "msg_content": "您的Shopee自定义报告" + task['report_name'] + "于" +
                                time_now + msg_conteng,
                 "create_at": time_now,
                 "status": 0

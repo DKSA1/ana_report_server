@@ -275,7 +275,7 @@ shopee_product_report_result = Table(
     Column('gmv_last_7', DECIMAL(10, 2), nullable=False, default=0),
     Column('sold_last_7', Integer, nullable=False, default=0),
     Column('sold_last_3', Integer, nullable=False, default=0),
-    Column('product_count', Integer, nullable=False, default=0),
+    Column('sold_total', Integer, nullable=False, default=0),
     Column('review_score', Float, nullable=False, default=0),
     Column('date', DateTime, nullable=False),
     Column('update_time', DateTime, nullable=False),
