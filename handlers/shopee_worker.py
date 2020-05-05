@@ -55,25 +55,13 @@ class ESBody:
             ]
         }
         self.element_data = [
-            # "gen_time",
-            "sold_last_1",
-            "sold_last_3",
-            "sold_last_7",
-            "sold_last_1_pop",
-            "sold_last_3_pop",
-            "sold_last_7_pop",
-            "gmv_last_1",
-            "gmv_last_3",
-            "gmv_last_7",
-            "gmv_last_1_pop",
-            "gmv_last_3_pop",
-            "gmv_last_7_pop",
-            "visit_last_1",
-            "visit_last_3",
-            "visit_last_7",
-            "cvr_last_1",
-            "cvr_last_3",
-            "cvr_last_7"
+            "sold_last_30",
+            "gmv_last_30",
+            "price",
+            "sold_total",
+            "review_score",
+            "favorite",
+            "review_number"
         ]
         self.element_symbol = {
             ">": "gt",
@@ -162,31 +150,6 @@ class ESBody:
                             }
                         )
 
-                # 发货地判断
-                if element['field'] == 'item_location':
-                    if element['value'] == '0':
-                        # print(params['item_location'])
-                        element_list.extend([{
-                            "script": {
-                                "script": "doc['item_location_country'].value != doc['store_location'].value"
-                                # "script": "doc['item_location_country'].value == " + site.upper()
-                            }
-                        }])
-                    elif element['value'] == '2':
-                        element_list.extend([{
-                            "script": {
-                                # "script": "doc['item_location_country'].value == doc['store_location'].value"
-                                "script": "doc['item_location_country'].value == " + "'" + task_params[
-                                    'site'].upper() + "'"
-                            }
-                        }])
-                    # TODO:改国内:CN
-                    elif element['value'] == '1':
-                        element_list.append({
-                            "term": {
-                                "item_location_country": "CN"
-                            }
-                        })  # HERE
 
                 # 品类过滤
                 # TODO:
@@ -195,8 +158,8 @@ class ESBody:
                     element_list.append({"term": {'category_id': {"value": cid_list[1]}}})
                     # element_list.append({"term": {'category_id': {"value": element['value']}}})
 
-                # 基础条件: 商家,品牌,品类
-                if element['field'] == 'seller' or element['field'] == 'brand':
+                # 基础条件: 商家,店铺
+                if element['field'] == 'merchant_name' or element['field'] == 'shop_name':
                     element_list.append({"term": {element['field']: {"value": element['value']}}})
 
                 # 数据条件
@@ -248,7 +211,7 @@ engine = create_engine(
 
 
 
-async def ebay_handle(group, task):
+async def shopee_handle(group, task):
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
     task = hy_task.task_data
@@ -319,6 +282,7 @@ async def ebay_handle(group, task):
                 "title": emoji.demojize(item['_source']['title']),
                 "site": item['_source']['site'],
                 "merchant_name": item['_source']['merchant_name'],
+                "shop_name": item['_source']['shop_name'],
                 # 需要构造
                 "category_path": str(item['_source']['category_path']),
                 "shop_location": item['_source']['shop_location'],
@@ -344,6 +308,7 @@ async def ebay_handle(group, task):
                     title=insert_stmt.inserted.title,
                     site=insert_stmt.inserted.site,
                     merchant_name=insert_stmt.inserted.merchant_name,
+                    shop_name=insert_stmt.inserted.shop_name,
                     category_path=insert_stmt.inserted.category_path,
                     shop_location=insert_stmt.inserted.shop_location,
                     price=insert_stmt.inserted.price,

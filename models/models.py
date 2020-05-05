@@ -268,6 +268,7 @@ shopee_product_report_result = Table(
     Column('title', String(512), nullable=False, default=''),
     Column('site', String(32), nullable=False, default=''),
     Column('merchant_name', String(64), nullable=False, default=''),
+    Column('shop_name', String(64), nullable=False, default=''),
     Column('category_path', TEXT, nullable=False, default=''),
     # Column('leaf_category_id', String(128), nullable=False, default=''),
     # Column('leaf_category_name', String(256), nullable=False, default=''),

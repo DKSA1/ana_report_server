@@ -21,10 +21,16 @@ db_session_mk = sessionmaker(bind=engine)
 def run():
     server = pipeflow.Server()
     # ebay 报表任务处理
-    input_end = NsqInputEndpoint(EBAY_REPORT_TASK_TOPIC, 'ebay_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
-    group = server.add_group('main', WORKER_NUMBER)
+    ebay_end = NsqInputEndpoint(EBAY_REPORT_TASK_TOPIC, 'ebay_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
+    group = server.add_group('ebay_report', WORKER_NUMBER)
     group.set_handle(ebay_handle)
-    group.add_input_endpoint('input', input_end)
+    group.add_input_endpoint('input', ebay_end)
+
+    # shopee 报表处理
+    shopee_end = NsqInputEndpoint(SHOPEE_REPORT_TASK_TOPIC, 'shopee_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
+    group = server.add_group('shopee_report', WORKER_NUMBER)
+    group.set_handle(shopee_handle)
+    group.add_input_endpoint('input', shopee_end)
 
     # 处理 Amazon报表任务
     amazon_input_end = NsqInputEndpoint(AMAZON_REPORT_TASK_TOPIC, 'amazon_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
