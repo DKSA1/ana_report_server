@@ -219,6 +219,8 @@ ebay_product_report_result = Table(
     Column('title', String(512), nullable=False, default=''),
     Column('site', String(32), nullable=False, default=''),
     Column('brand', String(64), nullable=False, default=''),
+    Column('seller', String(64), nullable=False, default=''),
+    Column('price', DECIMAL(10, 2), nullable=False, default=''),
     Column('category_path', String(512), nullable=False, default=''),
     # Column('leaf_category_id', String(128), nullable=False, default=''),
     # Column('leaf_category_name', String(256), nullable=False, default=''),

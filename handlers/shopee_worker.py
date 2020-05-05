@@ -116,39 +116,48 @@ class ESBody:
             not_list = []
             for element in group:
                 # 上架时间判断
-                if element['field'] == 'min_gen_time':
+                # if element['field'] == 'min_gen_time':
+                #     element_list.append(
+                #         {"range": {"gen_time": {"gte": element['value'], "format": "yyyy-MM-dd"}}}
+                #     )
+                # if element['field'] == 'max_gen_time':
+                #     element_list.append(
+                #         {"range": {"gen_time": {"lte": element['value'], "format": "yyyy-MM-dd"}}}
+                #     )
+                if element['field'] == 'gen_time':
+                    gen_time_list = element['value'].split("|")
                     element_list.append(
-                        {"range": {"gen_time": {"gte": element['value'], "format": "yyyy-MM-dd"}}}
-                    )
-                if element['field'] == 'max_gen_time':
-                    element_list.append(
-                        {"range": {"gen_time": {"lte": element['value'], "format": "yyyy-MM-dd"}}}
+                        {
+                            "range": {
+                                "gen_time": {
+                                    "gte": gen_time_list[0],
+                                    "lte": gen_time_list[1],
+                                    "format": "yyyy-MM-dd"
+                                }
+                            }
+                        }
                     )
 
                 # 注册地判断
-                if element['field'] == 'store_location':
-                    if element['value'] == "CN":
-                        element_list.append(
-                            {
-                                "terms": {
-                                    "store_location": ["CN", "HK"]
-                                }
-                            }
-                        )
-                    elif element['value'] != "other":
+                if element['field'] == 'shop_location':
+                    if element['value'] == "0":
+                        pass
+                    elif element['value'] == "1":
                         element_list.append(
                             {
                                 "term": {
-                                    "store_location": element['value']
+                                    "shop_location": "Overseas"
                                 }
                             }
                         )
 
-                    else:
+                    elif element['value'] == "2":
                         not_list.append(
                             {
-                                "terms": {
-                                    "store_location": ["GB", "US", "DE", "AU", "CN", "HK"]
+                                "term": {
+                                    "shop_location": {
+                                        "value": "Overseas"
+                                    }
                                 }
                             }
                         )

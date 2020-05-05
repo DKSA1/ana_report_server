@@ -360,6 +360,8 @@ async def ebay_handle(group, task):
                 # 需要构造
                 "category_path": str(item['_source']['category_path']),
                 "store_location": item['_source']['store_location'],
+                "seller": item['_source']['seller'],
+                "price": item['_source']['price'],
                 "gmv_last_3_pop": item['_source']['gmv_last_3_pop'],
                 "gmv_last_3": item['_source']['gmv_last_3'],
                 "gmv_last_1": item['_source']['gmv_last_1'],
@@ -384,6 +386,8 @@ async def ebay_handle(group, task):
                     title=insert_stmt.inserted.title,
                     site=insert_stmt.inserted.site,
                     brand=insert_stmt.inserted.brand,
+                    seller=insert_stmt.inserted.seller,
+                    price=insert_stmt.inserted.price,
                     category_path=insert_stmt.inserted.category_path,
                     store_location=insert_stmt.inserted.store_location,
                     gmv_last_3_pop=insert_stmt.inserted.gmv_last_3_pop,
@@ -434,6 +438,7 @@ async def ebay_handle(group, task):
         )
         cursor_status = conn.execute(select_task_status)
         records_status = cursor_status.fetchone()
+        logger.info(records_status)
         if records_status['status'] == 1:
             msg_conteng = "生成成功,请及时查看!"
         elif records_status['status'] == 2:
