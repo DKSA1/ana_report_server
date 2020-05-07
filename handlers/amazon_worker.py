@@ -43,6 +43,16 @@ class AmazonBody:
                         "field": "gmv_last_7"
                     }
                 },
+                "sold_total_30": {
+                    "sum": {
+                        "field": "sold_last_30"
+                    }
+                },
+                "gmv_total_30": {
+                    "sum": {
+                        "field": "gmv_last_30"
+                    }
+                },
             },
             "size": 50,
             "sort": [
@@ -196,6 +206,8 @@ async def amazon_handle(group, task):
                          AmazonTask.product_total: index_result['hits']['total']['value'],
                          AmazonTask.sold_total_7: index_result['aggregations']['sold_total_7']['value'],
                          AmazonTask.gmv_total_7: round(index_result['aggregations']['gmv_total_7']['value'], 2),
+                         AmazonTask.sold_total_30: index_result['aggregations']['sold_total_30']['value'],
+                         AmazonTask.gmv_total_30: round(index_result['aggregations']['gmv_total_30']['value'], 2),
                          AmazonTask.report_chart: f"查询到{index_result['hits']['total']['value']}条满足条件的商品数据",
                          AmazonTask.get_result_count: get_result_count},
                         synchronize_session=False)
@@ -241,35 +253,3 @@ async def amazon_handle(group, task):
 
     logger.info("amazon report task over")
 
-# async def run():
-#
-#     tasks = db_session.query(AmazonTask.task_id, AmazonTask.site, AmazonTask.index_name,
-#                              AmazonTask.save_result_numb, AmazonTask.context, AmazonTask.user_id,
-#                              AmazonTask.order_by, AmazonTask.order, AmazonTask.type, AmazonTask.report_name) \
-#                     .filter(AmazonTask.status == 0).all()
-#
-#     if tasks:
-#         for task in tasks:
-#             task_info = {
-#                 "task_id": task.task_id,
-#                 "type": task.type,
-#                 "site": task.site,
-#                 "condition": str(task.context),
-#                 "result_count": task.save_result_numb,
-#                 "order_by": task.order_by,
-#                 "order": task.order,
-#                 "index_name": task.index_name,
-#                 "user_id": task.user_id,
-#                 "report_name": task.report_name
-#                         }
-#
-#         _ = await amazon_handle(None, task=nsq_msg)
-#
-#
-#
-#
-#
-# if __name__ == '__main__':
-#
-#     loop = asyncio.get_event_loop()
-#     loop.run_until_complete(run(db_session_mk))
