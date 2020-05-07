@@ -171,6 +171,7 @@ async def wish_handle(group, task):
                 index=task['index_name'],
                 body=search_body,
                 size=task['result_count'])
+        raise
     except Exception as e:
         logger.error(f"{e}, **** Search failed ****")
         with closing(db_session_mk(autocommit=True)) as db_session:
