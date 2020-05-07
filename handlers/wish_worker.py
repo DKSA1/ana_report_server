@@ -149,7 +149,7 @@ class WishBody:
 async def wish_handle(group, task):
     logger.info("wish report task start")
     hy_task = ANATask(task)
-
+    index_result = None
     task = hy_task.task_data
 
     es = WishBody()

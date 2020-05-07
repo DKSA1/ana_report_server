@@ -150,7 +150,7 @@ async def amazon_handle(group, task):
     logger.info("amazon report task start")
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
-
+    index_result = None
     task = hy_task.task_data
 
     es = AmazonBody()
