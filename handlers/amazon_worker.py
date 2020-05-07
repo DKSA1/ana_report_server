@@ -28,7 +28,15 @@ class AmazonBody:
             "query": {
                 "bool": {
                     "filter": [],
-                    "must": [],
+                    "must": [
+                                {
+                                    "bool": {
+                                        "should": [
+
+                                        ]
+                                    }
+                                }
+                            ],
                     "must_not": []
                 }
             },
@@ -142,7 +150,7 @@ class AmazonBody:
                         "must": element_list
                     }
                 })
-        print("-*-*-*-*-*:", self.search_body)
+
         return self.search_body
 
 
@@ -154,16 +162,8 @@ async def amazon_handle(group, task):
     task = hy_task.task_data
 
     es = AmazonBody()
-    search_body = es.create_search(task)
-    logger.info(f"************:{search_body}")
-    es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
-    index_result = await es_connection.search(
-        index=task['index_name'],
-        body=search_body,
-        size=task['result_count'])
     try:
         search_body = es.create_search(task)
-        logger.info(f"************:{search_body}")
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
         index_result = await es_connection.search(
                 index=task['index_name'],

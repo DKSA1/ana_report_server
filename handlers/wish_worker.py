@@ -28,7 +28,15 @@ class WishBody:
             "query": {
                 "bool": {
                     "filter": [],
-                    "must": [],
+                    "must": [
+                                {
+                                    "bool": {
+                                        "should": [
+
+                                        ]
+                                    }
+                                }
+                            ],
                     "must_not": []
                 }
             },
