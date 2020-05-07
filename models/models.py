@@ -219,6 +219,8 @@ ebay_product_report_result = Table(
     Column('title', String(512), nullable=False, default=''),
     Column('site', String(32), nullable=False, default=''),
     Column('brand', String(64), nullable=False, default=''),
+    Column('seller', String(64), nullable=False, default=''),
+    Column('price', DECIMAL(10, 2), nullable=False, default=''),
     Column('category_path', String(512), nullable=False, default=''),
     # Column('leaf_category_id', String(128), nullable=False, default=''),
     # Column('leaf_category_name', String(256), nullable=False, default=''),
@@ -232,6 +234,69 @@ ebay_product_report_result = Table(
     Column('cvr', Float, nullable=False, default=0),
     Column('date', DateTime, nullable=False),
     Column('update_time', DateTime, nullable=False),
+)
+
+
+shopee_custom_report_task = Table(
+    'shopee_custom_report_task', metadata,
+    Column('task_id', String(32), nullable=False, default=''),
+    Column('user_id', String(32), nullable=False, default=''),
+    Column('site', String(8), nullable=False, default=''),
+    Column('report_name', String(256), nullable=False, default=''),
+    Column('type', String(16), nullable=False, default=''),
+    Column('index_name', String(32), nullable=False, default=''),
+    Column('condition', TEXT),
+    Column('start_at', DateTime, nullable=False),
+    Column('end_at', DateTime, nullable=False),
+    Column('result_count', Integer, nullable=False, default=0),
+    Column('order_by', String(32), nullable=False, default=''),
+    Column('order', String(5), nullable=False, default=''),
+    Column('methods', String(512), nullable=False, default=''),
+    Column('update_time', DateTime, nullable=False),
+    Column('product_total', Integer, nullable=False),
+    Column('get_result_count', Integer, nullable=False),
+    Column('sold_total', Integer, nullable=False),
+    Column('status', TINYINT, nullable=False)
+)
+
+
+shopee_product_report_result = Table(
+    'shopee_product_report_result', metadata,
+    Column('pid', String(32), nullable=False, default=''),
+    Column('task_id', String(32), nullable=False, default=''),
+    Column('img', String(256), nullable=False, default=''),
+    Column('title', String(512), nullable=False, default=''),
+    Column('site', String(32), nullable=False, default=''),
+    Column('merchant_name', String(64), nullable=False, default=''),
+    Column('shop_name', String(64), nullable=False, default=''),
+    Column('category_path', TEXT, nullable=False, default=''),
+    # Column('leaf_category_id', String(128), nullable=False, default=''),
+    # Column('leaf_category_name', String(256), nullable=False, default=''),
+    Column('shop_location', String(64), nullable=False, default=''),
+    Column('price', DECIMAL(10, 2), nullable=False, default=0),
+    Column('gmv_last_3', DECIMAL(10, 2), nullable=False, default=0),
+    Column('gmv_last_7', DECIMAL(10, 2), nullable=False, default=0),
+    Column('sold_last_7', Integer, nullable=False, default=0),
+    Column('sold_last_3', Integer, nullable=False, default=0),
+    Column('sold_total', Integer, nullable=False, default=0),
+    Column('review_score', Float, nullable=False, default=0),
+    Column('date', DateTime, nullable=False),
+    Column('update_time', DateTime, nullable=False),
+)
+
+
+shopee_category = Table(
+    'shopee_category', metadata,
+    Column('category_id', String(64), nullable=False, default=''),
+    Column('category_name', String(128), nullable=False, default=''),
+    Column('level', TINYINT),
+    Column('is_leaf', TINYINT),
+    Column('parent_id', String(32), nullable=False, default=''),
+    Column('site', String(8), nullable=False, default=''),
+    Column('category_id_path', String(128), nullable=False, default=''),
+    Column('category_name_path', String(523), nullable=False, default=''),
+    Column('update_time', DateTime, nullable=False),
+    PrimaryKeyConstraint('category_id_path', 'site', name='pk')
 )
 
 
