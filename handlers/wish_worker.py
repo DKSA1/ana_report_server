@@ -69,11 +69,14 @@ class WishBody:
             ]
         }
         self.element_data = [
+            "sold_last_1",
+            "gmv_last_1",
             "sold_last_7",
             "gmv_last_7",
             "sold_last_30",
             "gmv_last_30",
             "price",
+            "total_bought",
             "review_score",
             "review_number"
         ]
