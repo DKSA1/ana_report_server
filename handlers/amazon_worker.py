@@ -103,7 +103,7 @@ class AmazonBody:
 
         for group in eval(task_params['condition']):
             element_list = []
-            # not_list = []
+            not_list = []
             for element in group:
 
                 # 基础条件: 商家,品牌,品类
@@ -129,19 +129,19 @@ class AmazonBody:
                         "multi_match": {"query": element['value'], "fuzziness": "AUTO",
                                         "minimum_should_match": "2<70%"}})
 
-            # if not_list:
-            #     self.search_body['query']['bool']['must'][0]['bool']['should'].append({
-            #         "bool": {
-            #             "must": element_list,
-            #             "must_not": not_list
-            #         }
-            #     })
-            # else:
-            #     self.search_body['query']['bool']['must'][0]['bool']['should'].append({
-            #         "bool": {
-            #             "must": element_list
-            #         }
-            #     })
+            if not_list:
+                self.search_body['query']['bool']['must'][0]['bool']['should'].append({
+                    "bool": {
+                        "must": element_list,
+                        "must_not": not_list
+                    }
+                })
+            else:
+                self.search_body['query']['bool']['must'][0]['bool']['should'].append({
+                    "bool": {
+                        "must": element_list
+                    }
+                })
 
         return self.search_body
 
