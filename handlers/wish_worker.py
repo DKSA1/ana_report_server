@@ -57,7 +57,7 @@ class WishBody:
                     "sum": {
                         "field": "total_bought"
                     }
-                },
+                }
             },
             "size": 50,
             "sort": [

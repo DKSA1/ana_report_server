@@ -52,7 +52,7 @@ class AmazonBody:
                     "sum": {
                         "field": "gmv_last_30"
                     }
-                },
+                }
             },
             "size": 50,
             "sort": [
@@ -142,7 +142,7 @@ class AmazonBody:
                         "must": element_list
                     }
                 })
-
+        print("-*-*-*-*-*:", self.search_body)
         return self.search_body
 
 
