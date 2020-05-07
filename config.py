@@ -78,3 +78,4 @@ EBAY_REPORT_TASK_TOPIC = "ebay_analysis_report.product"
 SHOPEE_REPORT_TASK_TOPIC = "shopee_analysis_report.product"
 
 AMAZON_REPORT_TASK_TOPIC = "amazon_analysis_report.product"
+WISH_REPORT_TASK_TOPIC = "wish_analysis_report.product"

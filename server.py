@@ -38,6 +38,12 @@ def run():
     amazon_report_group.set_handle(amazon_handle)
     amazon_report_group.add_input_endpoint("input", amazon_input_end)
 
+    # 处理 wish 报表任务
+    wish_input_end = NsqInputEndpoint(WISH_REPORT_TASK_TOPIC, 'wish_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
+    wish_report_group = server.add_group('wish_report', WORKER_NUMBER)
+    wish_report_group.set_handle(wish_handle)
+    wish_report_group.add_input_endpoint("input", wish_input_end)
+
     # 把数据库任务 推到NSQ中
     task_save_to_nsq = TaskSaveToNsqScheduler(db_session_mk)
     server.add_worker(task_save_to_nsq.schedule)

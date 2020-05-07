@@ -361,3 +361,54 @@ class AnaUserMsg(Base):
         msg_content = Column(String(255), nullable=False, default='')
         create_at = Column(TIMESTAMP, nullable=False)
         status = Column(Integer, nullable=True)
+
+
+class WishTask(Base):
+    __tablename__ = 'wish_custom_report_task'
+    __table_args__ = (
+        PrimaryKeyConstraint('task_id', 'user_id', name='PK_id'),
+    )
+    task_id = Column(Integer)
+    user_id = Column(Integer, nullable=False)
+    report_name = Column(String(128), nullable=False, default=0)
+    create_time = Column(TIMESTAMP, nullable=True)
+    update_time = Column(TIMESTAMP, nullable=True)
+    report_chart = Column(String(128), nullable=True)
+    # 0=待执行， 1=执行中，2=成功，3=失败
+    status = Column(Integer, nullable=False, default=0)
+    save_result_numb = Column(Integer, nullable=True)
+    context = Column(TEXT, nullable=False, default='')
+    order_by = Column(String(32))
+    order = Column(String(4))
+    methods = Column(String(512))
+    product_total = Column(Integer, default=0)
+    sold_total_1 = Column(Integer, default=0)
+    gmv_total_1 = Column(DECIMAL(12, 2), default=0)
+    sold_total_7 = Column(Integer, default=0)
+    gmv_total_7 = Column(DECIMAL(12, 2), default=0)
+    type = Column(String(32))
+    index_name = Column(String(32))
+    get_result_count = Column(Integer)
+
+
+class WishTaskResult(Base):
+    __tablename__ = 'wish_product_report_result'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', 'task_id', name='PK_id'),
+    )
+    id = Column(Integer, autoincrement=True)
+    task_id = Column(Integer, nullable=False)
+    pid = Column(String(16), nullable=False)
+    img = Column(String(256), default='')
+    title = Column(String(512), nullable=False, default='')
+    shop_name = Column(String(64), nullable=True)
+    price = Column(DECIMAL(8, 2), nullable=True, default=0)
+    sold_last_1 = Column(Integer, nullable=False, default=0)
+    gmv_last_1 = Column(DECIMAL(12, 2))
+    sold_last_7 = Column(Integer, nullable=False, default=0)
+    gmv_last_7 = Column(DECIMAL(12, 2))
+    sold_last_30 = Column(Integer, nullable=False, default=0)
+    gmv_last_30 = Column(DECIMAL(12, 2))
+    total_bought = Column(Integer, nullable=False)
+    total_wishlist = Column(Integer, nullable=False)
+    review_score = Column(DECIMAL(8, 2), default=0)
