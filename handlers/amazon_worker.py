@@ -156,6 +156,7 @@ async def amazon_handle(group, task):
     es = AmazonBody()
     try:
         search_body = es.create_search(task)
+        logger.info(f"************:{search_body}")
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
         index_result = await es_connection.search(
                 index=task['index_name'],
