@@ -164,6 +164,7 @@ async def wish_handle(group, task):
                 body=search_body,
                 size=task['result_count'])
     except Exception as e:
+        logger.error(f"{e}, **** Search failed ****")
         with closing(db_session_mk(autocommit=True)) as db_session:
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
             ret = db_session.query(WishTask) \
