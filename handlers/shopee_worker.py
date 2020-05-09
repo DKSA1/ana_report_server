@@ -278,7 +278,7 @@ async def shopee_handle(group, task):
             result_info = {
                 "task_id": task['task_id'],
                 "pid": item['_source']['pid'],
-                "img": item['_source']['img'],
+                "img": 'https://cf.shopee.com.my/file/' + item['_source']['img'],
                 "title": emoji.demojize(item['_source']['title']),
                 "site": item['_source']['site'],
                 "merchant_name": item['_source']['merchant_name'],
