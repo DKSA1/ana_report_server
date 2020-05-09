@@ -398,7 +398,7 @@ class WishTaskResult(Base):
     )
     id = Column(Integer, autoincrement=True)
     task_id = Column(Integer, nullable=False)
-    pid = Column(String(16), nullable=False)
+    pid = Column(String(32), nullable=False)
     img = Column(String(256), default='')
     title = Column(String(512), nullable=False, default='')
     shop_name = Column(String(64), nullable=True)

@@ -164,6 +164,12 @@ async def wish_handle(group, task):
     task = hy_task.task_data
 
     es = WishBody()
+    search_body = es.create_search(task)
+    es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+    index_result = await es_connection.search(
+        index=task['index_name'],
+        body=search_body,
+        size=task['result_count'])
     try:
         search_body = es.create_search(task)
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
