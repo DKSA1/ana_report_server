@@ -256,6 +256,13 @@ shopee_custom_report_task = Table(
     Column('product_total', Integer, nullable=False),
     Column('get_result_count', Integer, nullable=False),
     Column('sold_total', Integer, nullable=False),
+    Column('sum_sold_last_3', Integer, nullable=False),
+    Column('sum_sold_last_7', Integer, nullable=False),
+    Column('sum_sold_last_30', Integer, nullable=False),
+    Column('sum_gmv_last_3', DECIMAL(10, 2), nullable=False),
+    Column('sum_gmv_last_7', DECIMAL(10, 2), nullable=False),
+    Column('sum_gmv_last_30', DECIMAL(10, 2), nullable=False),
+    Column('sold_total', Integer, nullable=False),
     Column('status', TINYINT, nullable=False)
 )
 

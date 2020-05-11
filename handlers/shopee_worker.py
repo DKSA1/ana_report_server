@@ -380,7 +380,13 @@ async def shopee_handle(group, task):
                     "update_time": time_now,
                     "get_result_count": get_result_count,
                     "product_total": index_result['hits']['total']['value'],
-                    "sold_total": index_result['aggregations']['sold_total']['value']
+                    "sold_total": index_result['aggregations']['sum_sold_total']['value'],
+                    "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
+                    "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
+                    "sum_sold_last_30": index_result['aggregations']['sum_sold_last_30']['value'],
+                    "sum_gmv_last_3": index_result['aggregations']['sum_gmv_last_3']['value'],
+                    "sum_gmv_last_7": index_result['aggregations']['sum_gmv_last_7']['value'],
+                    "sum_gmv_last_30": index_result['aggregations']['sum_gmv_last_30']['value']
                 }).where(
                     shopee_custom_report_task.c.task_id == task['task_id']
                 )
