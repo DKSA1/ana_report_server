@@ -364,9 +364,9 @@ async def shopee_handle(group, task):
                     "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
                     "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
                     "sum_sold_last_30": index_result['aggregations']['sum_sold_last_30']['value'],
-                    "sum_gmv_last_3": index_result['aggregations']['sum_gmv_last_3']['value'],
-                    "sum_gmv_last_7": index_result['aggregations']['sum_gmv_last_7']['value'],
-                    "sum_gmv_last_30": index_result['aggregations']['sum_gmv_last_30']['value']
+                    "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
+                    "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
+                    "sum_gmv_last_30": round(index_result['aggregations']['sum_gmv_last_30']['value'], 2)
                 }).where(
                     shopee_custom_report_task.c.task_id == task['task_id']
                 )
