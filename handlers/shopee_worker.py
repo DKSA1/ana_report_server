@@ -340,24 +340,24 @@ async def shopee_handle(group, task):
                 result = conn.execute(on_duplicate_key_stmt)
                 get_result_count += 1
 
-                # 更新任务状态
-                ins = update(shopee_custom_report_task)
-                ins = ins.values({
-                    "status": 1,
-                    "update_time": time_now,
-                    "get_result_count": get_result_count,
-                    "product_total": index_result['hits']['total']['value'],
-                    "sold_total": index_result['aggregations']['sum_sold_total']['value'],
-                    "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
-                    "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
-                    "sum_sold_last_30": index_result['aggregations']['sum_sold_last_30']['value'],
-                    "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
-                    "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
-                    "sum_gmv_last_30": round(index_result['aggregations']['sum_gmv_last_30']['value'], 2)
-                }).where(
-                    shopee_custom_report_task.c.task_id == task['task_id']
-                )
-                result = conn.execute(ins)
+            # 更新任务状态
+            ins = update(shopee_custom_report_task)
+            ins = ins.values({
+                "status": 1,
+                "update_time": time_now,
+                "get_result_count": get_result_count,
+                "product_total": index_result['hits']['total']['value'],
+                "sold_total": index_result['aggregations']['sum_sold_total']['value'],
+                "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
+                "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
+                "sum_sold_last_30": index_result['aggregations']['sum_sold_last_30']['value'],
+                "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
+                "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
+                "sum_gmv_last_30": round(index_result['aggregations']['sum_gmv_last_30']['value'], 2)
+            }).where(
+                shopee_custom_report_task.c.task_id == task['task_id']
+            )
+            result = conn.execute(ins)
 
             ins_msg = insert(ana_user_msg)
             insert_stmt_msg = ins_msg.values(
