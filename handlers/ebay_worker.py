@@ -281,102 +281,94 @@ async def ebay_handle(group, task):
     task = hy_task.task_data
     time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
-        # logger.info("connect success")
-        # task_datas = conn.execute(select([ebay_custom_report_task]).where(
-        #     and_(
-        #         ebay_custom_report_task.c.status == 0,
-        #         ebay_custom_report_task.c.type == "product"
-        #         # ebay_custom_report_task.c.task_id == "bailuntec1586329016"
-        #     )
-        # ))
-        es = ESBody()
-        # # logger.info(task_datas)
-        # # 逐个任务完成查询es写入db
-        search_body = es.create_search(task)
-        logger.info("========================es请求体================================")
-        logger.info(json.dumps(search_body))
-        logger.info("========================es请求体================================")
+        try:
+            es = ESBody()
+            # # 逐个任务完成查询es写入db
+            search_body = es.create_search(task)
+            logger.info("========================es请求体================================")
+            logger.info(json.dumps(search_body))
+            logger.info("========================es请求体================================")
 
-        es_connection = Elasticsearch(hosts=EBAY_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+            es_connection = Elasticsearch(hosts=EBAY_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
 
-        index_result = await es_connection.search(
-            index=task['index_name'],
-            body=search_body,
-            size=task['result_count'])
-        # logger.info(index_result)
-        # 报告商品结果列表
-        the_es_result = index_result['hits']['hits']
-        name_ids = []
-        # 构造品类IDS
-        for item in the_es_result:
-            # logger.info(item)
-            for category_id in item['_source']['leaf_category_id']:
-                name_ids.append(category_id)
-        # 查出category_path
-        select_category_name = select([
-            ebay_category.c.category_name,
-            ebay_category.c.category_id,
-            ebay_category.c.category_id_path,
-            ebay_category.c.category_name_path
-        ]).where(
-            and_(
-                ebay_category.c.category_id.in_(name_ids),
-                ebay_category.c.site == task['site']
-            ))
-        cursor_name = conn.execute(select_category_name)
-        records_name = cursor_name.fetchall()
-        logger.info("=======补全category_path的id========")
-        logger.info(name_ids)
-        logger.info("===============")
-        # 生成类目path
-        for db_info in records_name:
-            for category in the_es_result:
-                for low_id in category['_source']['leaf_category_id']:
-                    # logger.info(low_id)
-                    if low_id == db_info['category_id']:
-                        name_list = db_info['category_name_path'].split(':')
-                        id_list = db_info['category_id_path'].split(':')
-                        complete_list = []
-                        category['_source']['category_path'] = []
-                        try:
-                            for i in range(3):
-                                complete_list.append({"name": name_list.pop(0), "id": id_list.pop(0)})
-                            category['_source']['category_path'].append(complete_list)
-                        except Exception as e:
-                            logger.info(e)
-                            category['_source']['category_path'].append(complete_list)
+            index_result = await es_connection.search(
+                index=task['index_name'],
+                body=search_body,
+                size=task['result_count'])
+            # logger.info(index_result)
+            # 报告商品结果列表
+            the_es_result = index_result['hits']['hits']
+            name_ids = []
+            # 构造品类IDS
+            for item in the_es_result:
+                # logger.info(item)
+                for category_id in item['_source']['leaf_category_id']:
+                    name_ids.append(category_id)
+            # 查出category_path
+            select_category_name = select([
+                ebay_category.c.category_name,
+                ebay_category.c.category_id,
+                ebay_category.c.category_id_path,
+                ebay_category.c.category_name_path
+            ]).where(
+                and_(
+                    ebay_category.c.category_id.in_(name_ids),
+                    ebay_category.c.site == task['site']
+                ))
+            cursor_name = conn.execute(select_category_name)
+            records_name = cursor_name.fetchall()
+            logger.info("=======补全category_path的id========")
+            logger.info(name_ids)
+            logger.info("===============")
+            # 生成类目path
+            for db_info in records_name:
+                for category in the_es_result:
+                    for low_id in category['_source']['leaf_category_id']:
+                        # logger.info(low_id)
+                        if low_id == db_info['category_id']:
+                            name_list = db_info['category_name_path'].split(':')
+                            id_list = db_info['category_id_path'].split(':')
+                            complete_list = []
+                            category['_source']['category_path'] = []
+                            try:
+                                for i in range(3):
+                                    complete_list.append({"name": name_list.pop(0), "id": id_list.pop(0)})
+                                category['_source']['category_path'].append(complete_list)
+                            except Exception as e:
+                                logger.info(e)
+                                category['_source']['category_path'].append(complete_list)
 
-        # 逐个商品更新db
-        get_result_count = 0
-        for item in the_es_result:
-            # 构造商品dict
-            result_info = {
-                "task_id": task['task_id'],
-                "item_id": item['_source']['item_id'],
-                "img": item['_source']['img'],
-                "title": emoji.demojize(item['_source']['title']),
-                "site": item['_source']['site'],
-                "brand": item['_source']['brand'],
-                # 需要构造
-                "category_path": str(item['_source']['category_path']),
-                "store_location": item['_source']['store_location'],
-                "seller": item['_source']['seller'],
-                "price": item['_source']['price'],
-                "gmv_last_3_pop": item['_source']['gmv_last_3_pop'],
-                "gmv_last_3": item['_source']['gmv_last_3'],
-                "gmv_last_1": item['_source']['gmv_last_1'],
-                "sold_last_1": item['_source']['sold_last_1'],
-                "sold_last_3": item['_source']['sold_last_3'],
-                "visit": item['_source']['visit_last_1'],
-                "cvr": item['_source']['sold_last_1'] / item['_source']['visit_last_1'] if item['_source'][
-                                                                                               'visit_last_1'] != 0 else 0,
-                "date": (datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
-                "update_time": time_now
-            }
-            # logger.info(result_info)
+            # 逐个商品更新db
+            get_result_count = 0
+            for item in the_es_result:
+                # 构造商品dict
+                result_info = {
+                    "task_id": task['task_id'],
+                    "item_id": item['_source']['item_id'],
+                    "img": item['_source']['img'],
+                    "title": emoji.demojize(item['_source']['title']),
+                    "site": item['_source']['site'],
+                    "brand": item['_source']['brand'],
+                    # 需要构造
+                    "category_path": str(item['_source']['category_path']),
+                    "store_location": item['_source']['store_location'],
+                    "seller": item['_source']['seller'],
+                    "price": item['_source']['price'],
+                    "gmv_last_3_pop": item['_source']['gmv_last_3_pop'],
+                    "gmv_last_3": item['_source']['gmv_last_3'],
+                    "gmv_last_1": item['_source']['gmv_last_1'],
+                    "sold_last_1": item['_source']['sold_last_1'],
+                    "sold_last_3": item['_source']['sold_last_3'],
+                    "visit": item['_source']['visit_last_1'],
+                    "cvr": item['_source']['sold_last_1'] / item['_source']['visit_last_1'] if item['_source'][
+                                                                                                   'visit_last_1'] != 0 else 0,
+                    "date": (datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
+                    "update_time": time_now
+                }
+                # logger.info(result_info)
 
-            # 插入商品信息
-            try:
+                # 插入商品信息
+
                 ins = insert(ebay_product_report_result)
                 insert_stmt = ins.values(result_info)
                 on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
@@ -416,47 +408,45 @@ async def ebay_handle(group, task):
                 )
                 result = conn.execute(ins)
                 # logger.info(result)
-            except Exception as e:
-                logger.info(e)
-                # 更新任务状态
-                ins = update(ebay_custom_report_task)
-                ins = ins.values({
-                    "status": 2,
-                    "update_time": time_now,
-                    "get_result_count": get_result_count,
-                    "product_total": index_result['hits']['total']['value'],
-                    "sold_total": index_result['aggregations']['sold_total']['value']
-                }).where(
-                    ebay_custom_report_task.c.task_id == task['task_id']
+                # 添加消息通知
+                ins_msg = insert(ana_user_msg)
+                insert_stmt_msg = ins_msg.values(
+                    {
+                        "user_id": task['user_id'],
+                        "msg_id": task['user_id'] + str(int(time.time())),
+                        "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
+                                       time_now + "生成成功,请及时查看!",
+                        "create_at": time_now,
+                        "status": 0
+                    }
                 )
-                result = conn.execute(ins)
-                # logger.info(result)
-
-        # 查询DB,验证任务状态,发送消息通知
-        select_task_status = select([ebay_custom_report_task.c.status]).where(
-            ebay_custom_report_task.c.task_id == task['task_id']
-        )
-        cursor_status = conn.execute(select_task_status)
-        records_status = cursor_status.fetchone()
-        logger.info(records_status)
-        if records_status['status'] == 1:
-            msg_conteng = "生成成功,请及时查看!"
-        elif records_status['status'] == 2:
-            msg_conteng = "生成失败,请重新编辑条件或联系网站管理员!"
-        # 添加消息通知
-        ins_msg = insert(ana_user_msg)
-        insert_stmt_msg = ins_msg.values(
-            {
-                "user_id": task['user_id'],
-                "msg_id": task['user_id']+str(int(time.time())),
-                "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
-                               time_now + msg_conteng,
-                "create_at": time_now,
-                "status": 0
-            }
-        )
-
-        result_msg = conn.execute(insert_stmt_msg)
+        except Exception as e:
+            logger.info(e)
+            # 更新任务状态
+            ins = update(ebay_custom_report_task)
+            ins = ins.values({
+                "status": 2,
+                "update_time": time_now,
+                "get_result_count": get_result_count,
+                "product_total": index_result['hits']['total']['value'],
+                "sold_total": index_result['aggregations']['sold_total']['value']
+            }).where(
+                ebay_custom_report_task.c.task_id == task['task_id']
+            )
+            result = conn.execute(ins)
+            # logger.info(result)
+            # 添加消息通知
+            ins_msg = insert(ana_user_msg)
+            insert_stmt_msg = ins_msg.values(
+                {
+                    "user_id": task['user_id'],
+                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
+                                   time_now + "生成失败,请重新编辑条件或联系网站管理员!",
+                    "create_at": time_now,
+                    "status": 0
+                }
+            )
 
 
 # def run():
