@@ -133,15 +133,6 @@ class ESBody:
             element_list = []
             not_list = []
             for element in group:
-                # 上架时间判断
-                # if element['field'] == 'min_gen_time':
-                #     element_list.append(
-                #         {"range": {"gen_time": {"gte": element['value'], "format": "yyyy-MM-dd"}}}
-                #     )
-                # if element['field'] == 'max_gen_time':
-                #     element_list.append(
-                #         {"range": {"gen_time": {"lte": element['value'], "format": "yyyy-MM-dd"}}}
-                #     )
                 if element['field'] == 'gen_time':
                     gen_time_list = element['value'].split("|")
                     element_list.append(
@@ -179,7 +170,6 @@ class ESBody:
                                 }
                             }
                         )
-
 
                 # 品类过滤
                 # TODO:
@@ -228,7 +218,6 @@ class ESBody:
         return self.search_body
 
 
-
 engine = create_engine(
     SQLALCHEMY_DATABASE_URI,
     pool_pre_ping=SQLALCHEMY_POOL_PRE_PING,
@@ -239,96 +228,94 @@ engine = create_engine(
 )
 
 
-
-
 async def shopee_handle(group, task):
     hy_task = ANATask(task)
     task_log = [hy_task.task_type, hy_task.task_data]
     task = hy_task.task_data
     time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
+        try:
+            es = ESBody()
+            # # 逐个任务完成查询es写入db
+            search_body = es.create_search(task)
+            logger.info("========================es请求体================================")
+            logger.info(json.dumps(search_body))
+            logger.info("========================es请求体================================")
 
-        es = ESBody()
-        # # 逐个任务完成查询es写入db
-        search_body = es.create_search(task)
-        logger.info("========================es请求体================================")
-        logger.info(json.dumps(search_body))
-        logger.info("========================es请求体================================")
+            es_connection = Elasticsearch(hosts=EBAY_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
 
-        es_connection = Elasticsearch(hosts=EBAY_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
+            index_result = await es_connection.search(
+                index=task['index_name'],
+                body=search_body,
+                size=task['result_count'])
+            # 报告商品结果列表
+            the_es_result = index_result['hits']['hits']
+            name_ids = []
+            # 构造品类IDS
+            for item in the_es_result:
+                for category_id in item['_source']['leaf_category_id']:
+                    name_ids.append(category_id)
+            # 查出category_path
+            select_category_name = select([
+                shopee_category.c.category_name,
+                shopee_category.c.category_id,
+                shopee_category.c.category_id_path,
+                shopee_category.c.category_name_path
+            ]).where(
+                and_(
+                    shopee_category.c.category_id.in_(name_ids),
+                    shopee_category.c.site == task['site']
+                ))
+            cursor_name = conn.execute(select_category_name)
+            records_name = cursor_name.fetchall()
+            logger.info("=======补全category_path的id========")
+            logger.info(name_ids)
+            logger.info("===============")
+            # 生成类目path
+            for db_info in records_name:
+                for category in the_es_result:
+                    for low_id in category['_source']['leaf_category_id']:
+                        if low_id == db_info['category_id']:
+                            name_list = db_info['category_name_path'].split(':')
+                            id_list = db_info['category_id_path'].split(':')
+                            complete_list = []
+                            category['_source']['category_path'] = []
+                            try:
+                                for i in range(3):
+                                    complete_list.append({"name": name_list.pop(0), "id": id_list.pop(0)})
+                                category['_source']['category_path'].append(complete_list)
+                            except Exception as e:
+                                logger.info(e)
+                                category['_source']['category_path'].append(complete_list)
 
-        index_result = await es_connection.search(
-            index=task['index_name'],
-            body=search_body,
-            size=task['result_count'])
-        # 报告商品结果列表
-        the_es_result = index_result['hits']['hits']
-        name_ids = []
-        # 构造品类IDS
-        for item in the_es_result:
-            for category_id in item['_source']['leaf_category_id']:
-                name_ids.append(category_id)
-        # 查出category_path
-        select_category_name = select([
-            shopee_category.c.category_name,
-            shopee_category.c.category_id,
-            shopee_category.c.category_id_path,
-            shopee_category.c.category_name_path
-        ]).where(
-            and_(
-                shopee_category.c.category_id.in_(name_ids),
-                shopee_category.c.site == task['site']
-            ))
-        cursor_name = conn.execute(select_category_name)
-        records_name = cursor_name.fetchall()
-        logger.info("=======补全category_path的id========")
-        logger.info(name_ids)
-        logger.info("===============")
-        # 生成类目path
-        for db_info in records_name:
-            for category in the_es_result:
-                for low_id in category['_source']['leaf_category_id']:
-                    if low_id == db_info['category_id']:
-                        name_list = db_info['category_name_path'].split(':')
-                        id_list = db_info['category_id_path'].split(':')
-                        complete_list = []
-                        category['_source']['category_path'] = []
-                        try:
-                            for i in range(3):
-                                complete_list.append({"name": name_list.pop(0), "id": id_list.pop(0)})
-                            category['_source']['category_path'].append(complete_list)
-                        except Exception as e:
-                            logger.info(e)
-                            category['_source']['category_path'].append(complete_list)
+            # 逐个商品更新db
+            get_result_count = 0
+            for item in the_es_result:
+                # 构造商品dict
+                result_info = {
+                    "task_id": task['task_id'],
+                    "pid": item['_source']['pid'],
+                    "img": 'https://cf.shopee.com.my/file/' + item['_source']['img'],
+                    "title": emoji.demojize(item['_source']['title']),
+                    "site": item['_source']['site'],
+                    "merchant_name": item['_source']['merchant_name'],
+                    "shop_name": item['_source']['shop_name'],
+                    # 需要构造
+                    "category_path": str(item['_source']['category_path']),
+                    "shop_location": item['_source']['shop_location'],
+                    "price": item['_source']['price'],
+                    "gmv_last_3": item['_source']['gmv_last_3'],
+                    "gmv_last_7": item['_source']['gmv_last_7'],
+                    "sold_last_7": item['_source']['sold_last_7'],
+                    "sold_last_3": item['_source']['sold_last_3'],
+                    "sold_total": item['_source']['sold_total'],
+                    "review_score": item['_source']['review_score'],
+                    "date": (datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
+                    "update_time": time_now
+                }
 
-        # 逐个商品更新db
-        get_result_count = 0
-        for item in the_es_result:
-            # 构造商品dict
-            result_info = {
-                "task_id": task['task_id'],
-                "pid": item['_source']['pid'],
-                "img": 'https://cf.shopee.com.my/file/' + item['_source']['img'],
-                "title": emoji.demojize(item['_source']['title']),
-                "site": item['_source']['site'],
-                "merchant_name": item['_source']['merchant_name'],
-                "shop_name": item['_source']['shop_name'],
-                # 需要构造
-                "category_path": str(item['_source']['category_path']),
-                "shop_location": item['_source']['shop_location'],
-                "price": item['_source']['price'],
-                "gmv_last_3": item['_source']['gmv_last_3'],
-                "gmv_last_7": item['_source']['gmv_last_7'],
-                "sold_last_7": item['_source']['sold_last_7'],
-                "sold_last_3": item['_source']['sold_last_3'],
-                "sold_total": item['_source']['sold_total'],
-                "review_score": item['_source']['review_score'],
-                "date": (datetime.now()).strftime('%Y-%m-%d %H:%M:%S'),
-                "update_time": time_now
-            }
+                # 插入商品信息
 
-            # 插入商品信息
-            try:
                 ins = insert(shopee_product_report_result)
                 insert_stmt = ins.values(result_info)
                 on_duplicate_key_stmt = insert_stmt.on_duplicate_key_update(
@@ -371,48 +358,42 @@ async def shopee_handle(group, task):
                     shopee_custom_report_task.c.task_id == task['task_id']
                 )
                 result = conn.execute(ins)
-            except Exception as e:
-                logger.info(e)
-                # 更新任务状态
-                ins = update(shopee_custom_report_task)
-                ins = ins.values({
-                    "status": 2,
-                    "update_time": time_now,
-                    "get_result_count": get_result_count,
-                    "product_total": index_result['hits']['total']['value'],
-                    "sold_total": index_result['aggregations']['sum_sold_total']['value'],
-                    "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
-                    "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
-                    "sum_sold_last_30": index_result['aggregations']['sum_sold_last_30']['value'],
-                    "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
-                    "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
-                    "sum_gmv_last_30": round(index_result['aggregations']['sum_gmv_last_30']['value'], 2)
-                }).where(
-                    shopee_custom_report_task.c.task_id == task['task_id']
-                )
-                result = conn.execute(ins)
 
-        # 查询DB,验证任务状态,发送消息通知
-        select_task_status = select([shopee_custom_report_task.c.status]).where(
-            shopee_custom_report_task.c.task_id == task['task_id']
-        )
-        cursor_status = conn.execute(select_task_status)
-        records_status = cursor_status.fetchone()
-        if records_status['status'] == 1:
-            msg_conteng = "生成成功,请及时查看!"
-        elif records_status['status'] == 2:
-            msg_conteng = "生成失败,请重新编辑条件或联系网站管理员!"
-        # 添加消息通知
-        ins_msg = insert(ana_user_msg)
-        insert_stmt_msg = ins_msg.values(
-            {
-                "user_id": task['user_id'],
-                "msg_id": task['user_id'] + str(int(time.time())),
-                "msg_content": "您的Shopee自定义报告" + task['report_name'] + "于" +
-                               time_now + msg_conteng,
-                "create_at": time_now,
-                "status": 0
-            }
-        )
+            ins_msg = insert(ana_user_msg)
+            insert_stmt_msg = ins_msg.values(
+                {
+                    "user_id": task['user_id'],
+                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_content": "您的Shopee自定义报告" + task['report_name'] + "于" +
+                                   time_now + "生成成功",
+                    "create_at": time_now,
+                    "status": 0
+                }
+            )
 
-        result_msg = conn.execute(insert_stmt_msg)
+            result_msg = conn.execute(insert_stmt_msg)
+        except Exception as e:
+            # 更新任务状态
+            ins = update(shopee_custom_report_task)
+            ins = ins.values({
+                "status": 2,
+                "update_time": time_now,
+            }).where(
+                shopee_custom_report_task.c.task_id == task['task_id']
+            )
+            result = conn.execute(ins)
+            ins_msg = insert(ana_user_msg)
+            insert_stmt_msg = ins_msg.values(
+                {
+                    "user_id": task['user_id'],
+                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_content": "您的Shopee自定义报告" + task['report_name'] + "于" +
+                                   time_now + "生成失败",
+                    "create_at": time_now,
+                    "status": 0
+                }
+            )
+
+            result_msg = conn.execute(insert_stmt_msg)
+            logger.info(e)
+
