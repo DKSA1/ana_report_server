@@ -115,14 +115,18 @@ class ESBody:
             element_list = []
             not_list = []
             for element in group:
-                # 上架时间判断
-                if element['field'] == 'min_gen_time':
+                if element['field'] == 'gen_time':
+                    gen_time_list = element['value'].split("|")
                     element_list.append(
-                        {"range": {"gen_time": {"gte": element['value'], "format": "yyyy-MM-dd"}}}
-                    )
-                if element['field'] == 'max_gen_time':
-                    element_list.append(
-                        {"range": {"gen_time": {"lte": element['value'], "format": "yyyy-MM-dd"}}}
+                        {
+                            "range": {
+                                "gen_time": {
+                                    "gte": gen_time_list[0],
+                                    "lte": gen_time_list[1],
+                                    "format": "yyyy-MM-dd"
+                                }
+                            }
+                        }
                     )
 
                 # 注册地判断
