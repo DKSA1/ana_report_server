@@ -43,6 +43,36 @@ class ESBody:
                     "sum": {
                         "field": "sold_total"
                     }
+                },
+                "sum_sold_last_7": {
+                    "sum": {
+                        "field": "sold_last_7"
+                    }
+                },
+                "sum_sold_last_3": {
+                    "sum": {
+                        "field": "sold_last_3"
+                    }
+                },
+                "sum_gmv_last_7": {
+                    "sum": {
+                        "field": "gmv_last_7"
+                    }
+                },
+                "sum_gmv_last_3": {
+                    "sum": {
+                        "field": "gmv_last_3"
+                    }
+                },
+                "sum_sold_last_1": {
+                    "sum": {
+                        "field": "sold_last_1"
+                    }
+                },
+                "sum_gmv_last_1": {
+                    "sum": {
+                        "field": "gmv_last_1"
+                    }
                 }
             },
             "size": 50,
@@ -406,7 +436,13 @@ async def ebay_handle(group, task):
                     "update_time": time_now,
                     "get_result_count": get_result_count,
                     "product_total": index_result['hits']['total']['value'],
-                    "sold_total": index_result['aggregations']['sold_total']['value']
+                    "sold_total": index_result['aggregations']['sold_total']['value'],
+                    "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
+                    "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
+                    "sum_sold_last_1": index_result['aggregations']['sum_sold_last_1']['value'],
+                    "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
+                    "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
+                    "sum_gmv_last_1": round(index_result['aggregations']['sum_gmv_last_1']['value'], 2)
                 }).where(
                     ebay_custom_report_task.c.task_id == task['task_id']
                 )
@@ -433,7 +469,13 @@ async def ebay_handle(group, task):
                 "update_time": time_now,
                 "get_result_count": get_result_count,
                 "product_total": index_result['hits']['total']['value'],
-                "sold_total": index_result['aggregations']['sold_total']['value']
+                "sold_total": index_result['aggregations']['sold_total']['value'],
+                "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
+                "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
+                "sum_sold_last_1": index_result['aggregations']['sum_sold_last_1']['value'],
+                "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
+                "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
+                "sum_gmv_last_1": round(index_result['aggregations']['sum_gmv_last_1']['value'], 2)
             }).where(
                 ebay_custom_report_task.c.task_id == task['task_id']
             )

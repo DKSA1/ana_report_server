@@ -189,6 +189,12 @@ ebay_custom_report_task = Table(
     Column('product_total', Integer, nullable=False),
     Column('get_result_count', Integer, nullable=False),
     Column('sold_total', Integer, nullable=False),
+    Column('sum_sold_last_3', Integer, nullable=False),
+    Column('sum_sold_last_7', Integer, nullable=False),
+    Column('sum_sold_last_1', Integer, nullable=False),
+    Column('sum_gmv_last_3', DECIMAL(10, 2), nullable=False),
+    Column('sum_gmv_last_7', DECIMAL(10, 2), nullable=False),
+    Column('sum_gmv_last_1', DECIMAL(10, 2), nullable=False),
     Column('status', TINYINT, nullable=False)
 )
 
@@ -236,7 +242,6 @@ ebay_product_report_result = Table(
     Column('update_time', DateTime, nullable=False),
 )
 
-
 shopee_custom_report_task = Table(
     'shopee_custom_report_task', metadata,
     Column('task_id', String(32), nullable=False, default=''),
@@ -266,7 +271,6 @@ shopee_custom_report_task = Table(
     Column('status', TINYINT, nullable=False)
 )
 
-
 shopee_product_report_result = Table(
     'shopee_product_report_result', metadata,
     Column('pid', String(32), nullable=False, default=''),
@@ -291,7 +295,6 @@ shopee_product_report_result = Table(
     Column('update_time', DateTime, nullable=False),
 )
 
-
 shopee_category = Table(
     'shopee_category', metadata,
     Column('category_id', String(64), nullable=False, default=''),
@@ -308,66 +311,66 @@ shopee_category = Table(
 
 
 class AmazonTask(Base):
-        __tablename__ = 'amazon_custom_report_task'
-        __table_args__ = (
-            PrimaryKeyConstraint('task_id', 'user_id', name='PK_id'),
-        )
-        task_id = Column(Integer)
-        user_id = Column(Integer, nullable=False)
-        report_name = Column(String(128), nullable=False, default=0)
-        site = Column(String(8))
-        create_time = Column(TIMESTAMP, nullable=True)
-        update_time = Column(TIMESTAMP, nullable=True)
-        report_chart = Column(String(128), nullable=True)
-        # 0=待执行， 1=执行中，2=成功，3=失败
-        status = Column(Integer, nullable=False, default=0)
-        save_result_numb = Column(Integer, nullable=True)
-        context = Column(TEXT, nullable=False, default='')
-        order_by = Column(String(32))
-        order = Column(String(4))
-        methods = Column(String(512))
-        product_total = Column(Integer, default=0)
-        sold_total_7 = Column(Integer, default=0)
-        gmv_total_7 = Column(DECIMAL(12, 2), default=0)
-        sold_total_30 = Column(Integer, default=0)
-        gmv_total_30 = Column(DECIMAL(12, 2), default=0)
-        type = Column(String(32))
-        index_name = Column(String(32))
-        get_result_count = Column(Integer)
+    __tablename__ = 'amazon_custom_report_task'
+    __table_args__ = (
+        PrimaryKeyConstraint('task_id', 'user_id', name='PK_id'),
+    )
+    task_id = Column(Integer)
+    user_id = Column(Integer, nullable=False)
+    report_name = Column(String(128), nullable=False, default=0)
+    site = Column(String(8))
+    create_time = Column(TIMESTAMP, nullable=True)
+    update_time = Column(TIMESTAMP, nullable=True)
+    report_chart = Column(String(128), nullable=True)
+    # 0=待执行， 1=执行中，2=成功，3=失败
+    status = Column(Integer, nullable=False, default=0)
+    save_result_numb = Column(Integer, nullable=True)
+    context = Column(TEXT, nullable=False, default='')
+    order_by = Column(String(32))
+    order = Column(String(4))
+    methods = Column(String(512))
+    product_total = Column(Integer, default=0)
+    sold_total_7 = Column(Integer, default=0)
+    gmv_total_7 = Column(DECIMAL(12, 2), default=0)
+    sold_total_30 = Column(Integer, default=0)
+    gmv_total_30 = Column(DECIMAL(12, 2), default=0)
+    type = Column(String(32))
+    index_name = Column(String(32))
+    get_result_count = Column(Integer)
 
 
 class AmazonTaskResult(Base):
-        __tablename__ = 'amazon_product_report_result'
-        __table_args__ = (
-            PrimaryKeyConstraint('id', 'asin', name='PK_id'),
-        )
-        id = Column(Integer, autoincrement=True)
-        task_id = Column(Integer, nullable=False)
-        asin = Column(String(16), nullable=False)
-        img = Column(String(256), default='')
-        title = Column(String(512), nullable=False, default='')
-        site = Column(String(32), nullable=False)
-        brand = Column(String(64), nullable=True)
-        merchant_name = Column(String(128), nullable=True)
-        price = Column(DECIMAL(8, 2), nullable=True, default=0)
-        top_category_rank = Column(Integer, nullable=True)
-        sold_last_7 = Column(Integer, nullable=False, default=0)
-        gmv_last_7 = Column(DECIMAL(12, 2))
-        sold_last_30 = Column(Integer)
-        gmv_last_30 = Column(DECIMAL(12, 2), default=0)
-        review_score = Column(DECIMAL(8, 2), default=0)
+    __tablename__ = 'amazon_product_report_result'
+    __table_args__ = (
+        PrimaryKeyConstraint('id', 'asin', name='PK_id'),
+    )
+    id = Column(Integer, autoincrement=True)
+    task_id = Column(Integer, nullable=False)
+    asin = Column(String(16), nullable=False)
+    img = Column(String(256), default='')
+    title = Column(String(512), nullable=False, default='')
+    site = Column(String(32), nullable=False)
+    brand = Column(String(64), nullable=True)
+    merchant_name = Column(String(128), nullable=True)
+    price = Column(DECIMAL(8, 2), nullable=True, default=0)
+    top_category_rank = Column(Integer, nullable=True)
+    sold_last_7 = Column(Integer, nullable=False, default=0)
+    gmv_last_7 = Column(DECIMAL(12, 2))
+    sold_last_30 = Column(Integer)
+    gmv_last_30 = Column(DECIMAL(12, 2), default=0)
+    review_score = Column(DECIMAL(8, 2), default=0)
 
 
 class AnaUserMsg(Base):
-        __tablename__ = 'ana_user_msg'
-        __table_args__ = (
-            PrimaryKeyConstraint('user_id', 'msg_id', name='PK_id'),
-        )
-        user_id = Column(String(32), nullable=False)
-        msg_id = Column(String(32), default='')
-        msg_content = Column(String(255), nullable=False, default='')
-        create_at = Column(TIMESTAMP, nullable=False)
-        status = Column(Integer, nullable=True)
+    __tablename__ = 'ana_user_msg'
+    __table_args__ = (
+        PrimaryKeyConstraint('user_id', 'msg_id', name='PK_id'),
+    )
+    user_id = Column(String(32), nullable=False)
+    msg_id = Column(String(32), default='')
+    msg_content = Column(String(255), nullable=False, default='')
+    create_at = Column(TIMESTAMP, nullable=False)
+    status = Column(Integer, nullable=True)
 
 
 class WishTask(Base):
