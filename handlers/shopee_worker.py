@@ -96,8 +96,8 @@ class ESBody:
         self.element_symbol = {
             ">": "gt",
             "<": "lt",
-            ">=": "gte",
-            "<=": "lte"
+            "≥": "gte",
+            "≤": "lte"
         }
 
     def create_search(self, task_params):
