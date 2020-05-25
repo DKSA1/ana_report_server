@@ -359,6 +359,11 @@ class AmazonTaskResult(Base):
     sold_last_30 = Column(Integer)
     gmv_last_30 = Column(DECIMAL(12, 2), default=0)
     review_score = Column(DECIMAL(8, 2), default=0)
+    sold_last_1 = Column(Integer, nullable=False, default=0)
+    review_number = Column(Integer, nullable=False, default=0)
+    top_category_name = Column(String(64), nullable=False)
+    delivery = Column(String(16), nullable=False)
+    gmv_last_1 = Column(DECIMAL(12, 2))
 
 
 class AnaUserMsg(Base):
@@ -417,8 +422,12 @@ class WishTaskResult(Base):
     gmv_last_1 = Column(DECIMAL(12, 2))
     sold_last_7 = Column(Integer, nullable=False, default=0)
     gmv_last_7 = Column(DECIMAL(12, 2))
-    sold_last_30 = Column(Integer, nullable=False, default=0)
-    gmv_last_30 = Column(DECIMAL(12, 2))
+    sold_last_3 = Column(Integer, nullable=False, default=0)
+    gmv_last_3 = Column(DECIMAL(12, 2))
     total_bought = Column(Integer, nullable=False)
     total_wishlist = Column(Integer, nullable=False)
     review_score = Column(DECIMAL(8, 2), default=0)
+    category_path = Column(String(256), default='')
+    is_hwc = Column(Integer, nullable=False, default=0)
+    is_pb = Column(Integer, nullable=False, default=0)
+    is_verified = Column(Integer, nullable=False, default=0)

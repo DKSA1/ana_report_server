@@ -185,6 +185,10 @@ async def amazon_handle(group, task):
             except:
                 db_session.rollback()
     get_result_count = 0
+    sum_sold_total_7 = 0
+    sum_gmv_total_7 = 0
+    sum_sold_total_30 = 0
+    sum_gmv_total_30 = 0
     with closing(db_session_mk(autocommit=False)) as db_session:
         if index_result['hits']['hits']:
             for result_value in index_result['hits']['hits']:
@@ -204,20 +208,28 @@ async def amazon_handle(group, task):
                 t.sold_last_30 = result_value['_source']["sold_last_30"]
                 t.gmv_last_30 = round(result_value['_source']["gmv_last_30"], 2)
                 t.review_score = result_value['_source']["review_score"]
+                t.sold_last_1 = result_value['_source']["sold_last_1"]
+                t.gmv_last_1 = round(result_value['_source']["gmv_last_1"], 2)
+                t.top_category_name = result_value['_source']["top_category_name"]
+                t.delivery = result_value['_source']["delivery"]
+                t.review_number = result_value['_source']["review_number"]
 
                 db_session.add(t)
                 get_result_count += 1
-
+                sum_sold_total_7 += result_value['_source']["sold_last_7"]
+                sum_gmv_total_7 += result_value['_source']["gmv_last_7"]
+                sum_sold_total_30 += result_value['_source']["sold_last_30"]
+                sum_gmv_total_30 += result_value['_source']["gmv_last_30"]
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
             ret = db_session.query(AmazonTask) \
                 .filter(AmazonTask.task_id == task['task_id']) \
                 .update({AmazonTask.status: 2,
                          AmazonTask.update_time: time_now,
-                         AmazonTask.product_total: index_result['hits']['total']['value'],
-                         AmazonTask.sold_total_7: index_result['aggregations']['sold_total_7']['value'],
-                         AmazonTask.gmv_total_7: round(index_result['aggregations']['gmv_total_7']['value'], 2),
-                         AmazonTask.sold_total_30: index_result['aggregations']['sold_total_30']['value'],
-                         AmazonTask.gmv_total_30: round(index_result['aggregations']['gmv_total_30']['value'], 2),
+                         AmazonTask.product_total: get_result_count,
+                         AmazonTask.sold_total_7: sum_sold_total_7,
+                         AmazonTask.gmv_total_7: round(sum_gmv_total_7, 2),
+                         AmazonTask.sold_total_30: sum_sold_total_30,
+                         AmazonTask.gmv_total_30: round(sum_gmv_total_30, 2),
                          AmazonTask.report_chart: f"查询到{index_result['hits']['total']['value']}条满足条件的商品数据",
                          AmazonTask.get_result_count: get_result_count},
                         synchronize_session=False)
