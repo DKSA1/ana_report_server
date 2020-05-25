@@ -372,12 +372,12 @@ async def shopee_handle(group, task):
                 "get_result_count": get_result_count,
                 "product_total": get_result_count,
                 "sold_total": sum_data['sold_total'],
-                "sum_sold_last_3": sum_data['sold_last_3'],
-                "sum_sold_last_7": sum_data['sold_last_7'],
-                "sum_sold_last_30": sum_data['sold_last_30'],
-                "sum_gmv_last_3": round(sum_data['gmv_last_3'], 2),
-                "sum_gmv_last_7": round(sum_data['gmv_last_7'], 2),
-                "sum_gmv_last_30": round(sum_data['gmv_last_30'], 2)
+                "sum_sold_last_3": sum_data['sum_sold_last_3'],
+                "sum_sold_last_7": sum_data['sum_sold_last_7'],
+                "sum_sold_last_30": sum_data['sum_sold_last_30'],
+                "sum_gmv_last_3": round(sum_data['sum_gmv_last_3'], 2),
+                "sum_gmv_last_7": round(sum_data['sum_gmv_last_7'], 2),
+                "sum_gmv_last_30": round(sum_data['sum_gmv_last_30'], 2)
             }).where(
                 shopee_custom_report_task.c.task_id == task['task_id']
             )

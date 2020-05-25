@@ -321,7 +321,7 @@ async def ebay_handle(group, task):
                 ebay_product_report_result.c.task_id == task['task_id'],
         )
 
-        await conn.execute(del_body)
+        conn.execute(del_body)
 
         try:
             es = ESBody()
@@ -454,6 +454,7 @@ async def ebay_handle(group, task):
                 get_result_count += 1
 
             # 更新任务状态
+            logger.info(sum_data)
             ins = update(ebay_custom_report_task)
             ins = ins.values({
                 "status": 1,
@@ -461,12 +462,12 @@ async def ebay_handle(group, task):
                 "get_result_count": get_result_count,
                 "product_total": get_result_count,
                 "sold_total": sum_data['sold_total'],
-                "sum_sold_last_3": sum_data['sold_last_3'],
-                "sum_sold_last_7": sum_data['sold_last_7'],
-                "sum_sold_last_1": sum_data['sold_last_1'],
-                "sum_gmv_last_3": round(sum_data['gmv_last_3'], 2),
-                "sum_gmv_last_7": round(sum_data['gmv_last_7'], 2),
-                "sum_gmv_last_1": round(sum_data['gmv_last_1'], 2)
+                "sum_sold_last_3": sum_data['sum_sold_last_3'],
+                "sum_sold_last_7": sum_data['sum_sold_last_7'],
+                "sum_sold_last_1": sum_data['sum_sold_last_1'],
+                "sum_gmv_last_3": round(sum_data['sum_gmv_last_3'], 2),
+                "sum_gmv_last_7": round(sum_data['sum_gmv_last_7'], 2),
+                "sum_gmv_last_1": round(sum_data['sum_gmv_last_1'], 2)
             }).where(
                 ebay_custom_report_task.c.task_id == task['task_id']
             )
