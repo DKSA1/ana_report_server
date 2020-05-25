@@ -211,8 +211,8 @@ async def wish_handle(group, task):
                 t.gmv_last_1 = result_value['_source']["gmv_last_1"]
                 t.sold_last_7 = result_value['_source']["sold_last_7"]
                 t.gmv_last_7 = round(result_value['_source']["gmv_last_7"], 2)
-                t.sold_last_30 = result_value['_source']["sold_last_30"]
-                t.gmv_last_30 = round(result_value['_source']["gmv_last_30"], 2)
+                t.sold_last_3 = result_value['_source']["sold_last_3"]
+                t.gmv_last_3 = round(result_value['_source']["gmv_last_3"], 2)
                 t.total_bought = result_value['_source']["total_bought"]
                 t.total_wishlist = result_value['_source']["total_wishlist"]
                 t.review_score = result_value['_source']["review_score"]
