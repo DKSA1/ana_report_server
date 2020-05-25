@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timedelta
 
 import emoji as emoji
-from sqlalchemy import create_engine, select, and_, update
+from sqlalchemy import create_engine, select, and_, update, delete
 from sqlalchemy.dialects.mysql import insert
 
 import pipeflow
@@ -39,43 +39,43 @@ class ESBody:
                     ]
                 }
             },
-            "aggs": {
-                "sum_sold_total": {
-                    "sum": {
-                        "field": "sold_total"
-                    }
-                },
-                "sum_sold_last_7": {
-                    "sum": {
-                        "field": "sold_last_7"
-                    }
-                },
-                "sum_sold_last_3": {
-                    "sum": {
-                        "field": "sold_last_3"
-                    }
-                },
-                "sum_gmv_last_7": {
-                    "sum": {
-                        "field": "gmv_last_7"
-                    }
-                },
-                "sum_gmv_last_3": {
-                    "sum": {
-                        "field": "gmv_last_3"
-                    }
-                },
-                "sum_sold_last_30": {
-                    "sum": {
-                        "field": "sold_last_30"
-                    }
-                },
-                "sum_gmv_last_30": {
-                    "sum": {
-                        "field": "gmv_last_30"
-                    }
-                }
-            },
+            # "aggs": {
+            #     "sum_sold_total": {
+            #         "sum": {
+            #             "field": "sold_total"
+            #         }
+            #     },
+            #     "sum_sold_last_7": {
+            #         "sum": {
+            #             "field": "sold_last_7"
+            #         }
+            #     },
+            #     "sum_sold_last_3": {
+            #         "sum": {
+            #             "field": "sold_last_3"
+            #         }
+            #     },
+            #     "sum_gmv_last_7": {
+            #         "sum": {
+            #             "field": "gmv_last_7"
+            #         }
+            #     },
+            #     "sum_gmv_last_3": {
+            #         "sum": {
+            #             "field": "gmv_last_3"
+            #         }
+            #     },
+            #     "sum_sold_last_30": {
+            #         "sum": {
+            #             "field": "sold_last_30"
+            #         }
+            #     },
+            #     "sum_gmv_last_30": {
+            #         "sum": {
+            #             "field": "gmv_last_30"
+            #         }
+            #     }
+            # },
             "size": 50,
             "sort": [
                 {
@@ -235,6 +235,12 @@ async def shopee_handle(group, task):
     task = hy_task.task_data
     time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
+        del_body = delete(shopee_product_report_result).where(
+            shopee_product_report_result.c.task_id == task['task_id'],
+        )
+
+        await conn.execute(del_body)
+
         try:
             es = ESBody()
             # # 逐个任务完成查询es写入db
@@ -291,7 +297,24 @@ async def shopee_handle(group, task):
 
             # 逐个商品更新db
             get_result_count = 0
+            sum_data = {
+                "sold_total": 0,
+                "sum_sold_last_3": 0,
+                "sum_sold_last_7": 0,
+                "sum_sold_last_30": 0,
+                "sum_gmv_last_3": 0,
+                "sum_gmv_last_7": 0,
+                "sum_gmv_last_30": 0
+            }
             for item in the_es_result:
+                sum_data['sold_total'] += item['_source']['sold_total']
+                sum_data['sum_sold_last_3'] += item['_source']['sold_last_3']
+                sum_data['sum_sold_last_7'] += item['_source']['sold_last_7']
+                sum_data['sum_sold_last_30'] += item['_source']['sold_last_30']
+                sum_data['sum_gmv_last_3'] += item['_source']['gmv_last_3']
+                sum_data['sum_gmv_last_7'] += item['_source']['gmv_last_7']
+                sum_data['sum_gmv_last_30'] += item['_source']['gmv_last_30']
+
                 # 构造商品dict
                 result_info = {
                     "task_id": task['task_id'],
@@ -347,14 +370,14 @@ async def shopee_handle(group, task):
                 "status": 1,
                 "update_time": time_now,
                 "get_result_count": get_result_count,
-                "product_total": index_result['hits']['total']['value'],
-                "sold_total": index_result['aggregations']['sum_sold_total']['value'],
-                "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
-                "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
-                "sum_sold_last_30": index_result['aggregations']['sum_sold_last_30']['value'],
-                "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
-                "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
-                "sum_gmv_last_30": round(index_result['aggregations']['sum_gmv_last_30']['value'], 2)
+                "product_total": get_result_count,
+                "sold_total": sum_data['sold_total'],
+                "sum_sold_last_3": sum_data['sold_last_3'],
+                "sum_sold_last_7": sum_data['sold_last_7'],
+                "sum_sold_last_30": sum_data['sold_last_30'],
+                "sum_gmv_last_3": round(sum_data['gmv_last_3'], 2),
+                "sum_gmv_last_7": round(sum_data['gmv_last_7'], 2),
+                "sum_gmv_last_30": round(sum_data['gmv_last_30'], 2)
             }).where(
                 shopee_custom_report_task.c.task_id == task['task_id']
             )

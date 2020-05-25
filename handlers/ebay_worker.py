@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timedelta
 
 import emoji as emoji
-from sqlalchemy import create_engine, select, and_, update
+from sqlalchemy import create_engine, select, and_, update, delete
 from sqlalchemy.dialects.mysql import insert
 
 import pipeflow
@@ -39,43 +39,43 @@ class ESBody:
                     ]
                 }
             },
-            "aggs": {
-                "sold_total": {
-                    "sum": {
-                        "field": "sold_total"
-                    }
-                },
-                "sum_sold_last_7": {
-                    "sum": {
-                        "field": "sold_last_7"
-                    }
-                },
-                "sum_sold_last_3": {
-                    "sum": {
-                        "field": "sold_last_3"
-                    }
-                },
-                "sum_gmv_last_7": {
-                    "sum": {
-                        "field": "gmv_last_7"
-                    }
-                },
-                "sum_gmv_last_3": {
-                    "sum": {
-                        "field": "gmv_last_3"
-                    }
-                },
-                "sum_sold_last_1": {
-                    "sum": {
-                        "field": "sold_last_1"
-                    }
-                },
-                "sum_gmv_last_1": {
-                    "sum": {
-                        "field": "gmv_last_1"
-                    }
-                }
-            },
+            # "aggs": {
+            #     "sold_total": {
+            #         "sum": {
+            #             "field": "sold_total"
+            #         }
+            #     },
+            #     "sum_sold_last_7": {
+            #         "sum": {
+            #             "field": "sold_last_7"
+            #         }
+            #     },
+            #     "sum_sold_last_3": {
+            #         "sum": {
+            #             "field": "sold_last_3"
+            #         }
+            #     },
+            #     "sum_gmv_last_7": {
+            #         "sum": {
+            #             "field": "gmv_last_7"
+            #         }
+            #     },
+            #     "sum_gmv_last_3": {
+            #         "sum": {
+            #             "field": "gmv_last_3"
+            #         }
+            #     },
+            #     "sum_sold_last_1": {
+            #         "sum": {
+            #             "field": "sold_last_1"
+            #         }
+            #     },
+            #     "sum_gmv_last_1": {
+            #         "sum": {
+            #             "field": "gmv_last_1"
+            #         }
+            #     }
+            # },
             "size": 50,
             "sort": [
                 {
@@ -316,6 +316,13 @@ async def ebay_handle(group, task):
     task = hy_task.task_data
     time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
+
+        del_body = delete(ebay_product_report_result).where(
+                ebay_product_report_result.c.task_id == task['task_id'],
+        )
+
+        await conn.execute(del_body)
+
         try:
             es = ESBody()
             # # 逐个任务完成查询es写入db
@@ -375,8 +382,24 @@ async def ebay_handle(group, task):
 
             # 逐个商品更新db
             get_result_count = 0
+            sum_data = {
+                "sold_total": 0,
+                "sum_sold_last_3": 0,
+                "sum_sold_last_7": 0,
+                "sum_sold_last_1": 0,
+                "sum_gmv_last_3": 0,
+                "sum_gmv_last_7": 0,
+                "sum_gmv_last_1": 0
+            }
             for item in the_es_result:
                 # 构造商品dict
+                sum_data['sold_total'] += item['_source']['sold_total']
+                sum_data['sum_sold_last_3'] += item['_source']['sold_last_3']
+                sum_data['sum_sold_last_7'] += item['_source']['sold_last_7']
+                sum_data['sum_sold_last_1'] += item['_source']['sold_last_1']
+                sum_data['sum_gmv_last_3'] += item['_source']['gmv_last_3']
+                sum_data['sum_gmv_last_7'] += item['_source']['gmv_last_7']
+                sum_data['sum_gmv_last_1'] += item['_source']['gmv_last_1']
                 result_info = {
                     "task_id": task['task_id'],
                     "item_id": item['_source']['item_id'],
@@ -430,37 +453,38 @@ async def ebay_handle(group, task):
                 # logger.info(result)
                 get_result_count += 1
 
-                # 更新任务状态
-                ins = update(ebay_custom_report_task)
-                ins = ins.values({
-                    "status": 1,
-                    "update_time": time_now,
-                    "get_result_count": get_result_count,
-                    "product_total": index_result['hits']['total']['value'],
-                    "sold_total": index_result['aggregations']['sold_total']['value'],
-                    "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
-                    "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
-                    "sum_sold_last_1": index_result['aggregations']['sum_sold_last_1']['value'],
-                    "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
-                    "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
-                    "sum_gmv_last_1": round(index_result['aggregations']['sum_gmv_last_1']['value'], 2)
-                }).where(
-                    ebay_custom_report_task.c.task_id == task['task_id']
-                )
-                result = conn.execute(ins)
-                # logger.info(result)
-                # 添加消息通知
-                ins_msg = insert(ana_user_msg)
-                insert_stmt_msg = ins_msg.values(
-                    {
-                        "user_id": task['user_id'],
-                        "msg_id": task['user_id'] + str(int(time.time())),
-                        "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
-                                       time_now + "生成成功,请及时查看!",
-                        "create_at": time_now,
-                        "status": 0
-                    }
-                )
+            # 更新任务状态
+            ins = update(ebay_custom_report_task)
+            ins = ins.values({
+                "status": 1,
+                "update_time": time_now,
+                "get_result_count": get_result_count,
+                "product_total": get_result_count,
+                "sold_total": sum_data['sold_total'],
+                "sum_sold_last_3": sum_data['sold_last_3'],
+                "sum_sold_last_7": sum_data['sold_last_7'],
+                "sum_sold_last_1": sum_data['sold_last_1'],
+                "sum_gmv_last_3": round(sum_data['gmv_last_3'], 2),
+                "sum_gmv_last_7": round(sum_data['gmv_last_7'], 2),
+                "sum_gmv_last_1": round(sum_data['gmv_last_1'], 2)
+            }).where(
+                ebay_custom_report_task.c.task_id == task['task_id']
+            )
+            result = conn.execute(ins)
+            # logger.info(result)
+            # 添加消息通知
+            ins_msg = insert(ana_user_msg)
+            insert_stmt_msg = ins_msg.values(
+                {
+                    "user_id": task['user_id'],
+                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
+                                   time_now + "生成成功,请及时查看!",
+                    "create_at": time_now,
+                    "status": 0
+                }
+            )
+            result_msg = conn.execute(insert_stmt_msg)
         except Exception as e:
             logger.info(e)
             # 更新任务状态
@@ -468,15 +492,15 @@ async def ebay_handle(group, task):
             ins = ins.values({
                 "status": 2,
                 "update_time": time_now,
-                "get_result_count": get_result_count,
-                "product_total": index_result['hits']['total']['value'],
-                "sold_total": index_result['aggregations']['sold_total']['value'],
-                "sum_sold_last_3": index_result['aggregations']['sum_sold_last_3']['value'],
-                "sum_sold_last_7": index_result['aggregations']['sum_sold_last_7']['value'],
-                "sum_sold_last_1": index_result['aggregations']['sum_sold_last_1']['value'],
-                "sum_gmv_last_3": round(index_result['aggregations']['sum_gmv_last_3']['value'], 2),
-                "sum_gmv_last_7": round(index_result['aggregations']['sum_gmv_last_7']['value'], 2),
-                "sum_gmv_last_1": round(index_result['aggregations']['sum_gmv_last_1']['value'], 2)
+                # "get_result_count": get_result_count,
+                # "product_total": get_result_count,
+                # "sold_total": sum_data['sold_total'],
+                # "sum_sold_last_3": sum_data['sold_last_3'],
+                # "sum_sold_last_7": sum_data['sold_last_7'],
+                # "sum_sold_last_1": sum_data['sold_last_1'],
+                # "sum_gmv_last_3": round(sum_data['gmv_last_3'], 2),
+                # "sum_gmv_last_7": round(sum_data['gmv_last_7'], 2),
+                # "sum_gmv_last_1": round(sum_data['gmv_last_1'], 2)
             }).where(
                 ebay_custom_report_task.c.task_id == task['task_id']
             )
