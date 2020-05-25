@@ -361,7 +361,7 @@ class AmazonTaskResult(Base):
     review_score = Column(DECIMAL(8, 2), default=0)
     sold_last_1 = Column(Integer, nullable=False, default=0)
     review_number = Column(Integer, nullable=False, default=0)
-    top_category_name = Column(String(16), nullable=False)
+    top_category_name = Column(String(64), nullable=False)
     delivery = Column(String(16), nullable=False)
     gmv_last_1 = Column(DECIMAL(12, 2))
 
