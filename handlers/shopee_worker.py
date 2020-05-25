@@ -241,6 +241,7 @@ async def shopee_handle(group, task):
 
         conn.execute(del_body)
 
+
         try:
             es = ESBody()
             # # 逐个任务完成查询es写入db

@@ -317,6 +317,7 @@ async def ebay_handle(group, task):
     time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
     with engine.connect() as conn:
 
+
         del_body = delete(ebay_product_report_result).where(
                 ebay_product_report_result.c.task_id == task['task_id'],
         )
