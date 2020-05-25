@@ -216,6 +216,16 @@ async def wish_handle(group, task):
                 t.total_bought = result_value['_source']["total_bought"]
                 t.total_wishlist = result_value['_source']["total_wishlist"]
                 t.review_score = result_value['_source']["review_score"]
+                path_list = []
+                if result_value['_source']["category_path"]:
+                    for name in result_value['_source']["category_path"][-1].split(':'):
+                        path_list.append({
+                            "category_name": name
+                        })
+                t.category_path = path_list
+                t.is_hwc = result_value['_source']["is_hwc"]
+                t.is_pb = result_value['_source']["is_pb"]
+                t.is_verified = result_value['_source']["is_verified"]
 
                 db_session.add(t)
                 get_result_count += 1

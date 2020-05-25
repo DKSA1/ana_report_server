@@ -208,6 +208,11 @@ async def amazon_handle(group, task):
                 t.sold_last_30 = result_value['_source']["sold_last_30"]
                 t.gmv_last_30 = round(result_value['_source']["gmv_last_30"], 2)
                 t.review_score = result_value['_source']["review_score"]
+                t.sold_last_1 = result_value['_source']["sold_last_1"]
+                t.gmv_last_1 = round(result_value['_source']["gmv_last_1"], 2)
+                t.top_category_name = result_value['_source']["top_category_name"]
+                t.delivery = result_value['_source']["delivery"]
+                t.review_number = result_value['_source']["review_number"]
 
                 db_session.add(t)
                 get_result_count += 1
