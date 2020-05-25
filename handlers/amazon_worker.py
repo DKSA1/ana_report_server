@@ -234,7 +234,7 @@ async def amazon_handle(group, task):
                          AmazonTask.get_result_count: get_result_count},
                         synchronize_session=False)
 
-            logger.info("*************************Amazon 报告消息正在写入*************************")
+
             m = AnaUserMsg()
             m.user_id = task["user_id"]
             m.msg_id = str(task['user_id']) + str(int(time.time())),
@@ -258,7 +258,7 @@ async def amazon_handle(group, task):
                          AmazonTask.update_time: time_now,
                          AmazonTask.report_chart: "未查询到满足条件的商品,请检查设置条件是否正确"},
                         synchronize_session=False)
-            logger.info("*************************Amazon 报告消息正在写入*************************")
+
             m = AnaUserMsg()
             m.user_id = task["user_id"]
             m.msg_id = str(task['user_id']) + str(int(time.time())),

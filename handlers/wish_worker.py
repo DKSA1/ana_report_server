@@ -164,7 +164,7 @@ async def wish_handle(group, task):
     task = hy_task.task_data
 
     es = WishBody()
-    
+
     try:
         search_body = es.create_search(task)
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
@@ -217,7 +217,7 @@ async def wish_handle(group, task):
                         path_list.append({
                             "category_name": name
                         })
-                t.category_path = path_list
+                t.category_path = str(path_list)
                 t.is_hwc = result_value['_source']["is_hwc"]
                 t.is_pb = result_value['_source']["is_pb"]
                 t.is_verified = result_value['_source']["is_verified"]
@@ -243,7 +243,6 @@ async def wish_handle(group, task):
                          WishTask.get_result_count: get_result_count},
                         synchronize_session=False)
 
-            logger.info("*************************Wish 报告消息正在写入*************************")
             m = AnaUserMsg()
             m.user_id = task["user_id"]
             m.msg_id = str(task['user_id']) + str(int(time.time())),
@@ -267,7 +266,7 @@ async def wish_handle(group, task):
                          WishTask.update_time: time_now,
                          WishTask.report_chart: "未查询到满足条件的商品,请检查设置条件是否正确"},
                         synchronize_session=False)
-            logger.info("*************************Wish 报告消息正在写入*************************")
+
             m = AnaUserMsg()
             m.user_id = task["user_id"]
             m.msg_id = str(task['user_id']) + str(int(time.time())),
