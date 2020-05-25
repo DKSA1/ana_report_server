@@ -216,7 +216,7 @@ class ESBody:
 
                 # 品类过滤
                 # TODO:
-                if element['field'] == 'category':
+                if element['field'] == 'category_id':
                     cid_list = element['value'].split('|')
                     element_list.append({"term": {'category_id': {"value": cid_list[1]}}})
                     # element_list.append({"term": {'category_id': {"value": element['value']}}})
