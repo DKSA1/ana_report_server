@@ -239,7 +239,7 @@ async def shopee_handle(group, task):
             shopee_product_report_result.c.task_id == task['task_id'],
         )
 
-        await conn.execute(del_body)
+        conn.execute(del_body)
 
         try:
             es = ESBody()
