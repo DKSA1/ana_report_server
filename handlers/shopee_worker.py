@@ -25,6 +25,7 @@ WORKER_NUMBER = 1
 class ESBody:
     def __init__(self):
         self.search_body = {
+            "track_total_hits": True,
             "query": {
                 "bool": {
                     "must": [
