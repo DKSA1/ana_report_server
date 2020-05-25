@@ -323,8 +323,8 @@ async def shopee_handle(group, task):
                     "img": 'https://cf.shopee.com.my/file/' + item['_source']['img'],
                     "title": emoji.demojize(item['_source']['title']),
                     "site": item['_source']['site'],
-                    "merchant_name": emoji.demojize(item['_source']['title']),
-                    "shop_name": emoji.demojize(item['_source']['title']),
+                    "merchant_name": emoji.demojize(item['_source']['merchant_name']),
+                    "shop_name": emoji.demojize(item['_source']['shop_name']),
                     # 需要构造
                     "category_path": str(item['_source']['category_path']),
                     "shop_location": item['_source']['shop_location'],
