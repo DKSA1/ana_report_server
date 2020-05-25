@@ -192,6 +192,10 @@ async def wish_handle(group, task):
             except:
                 db_session.rollback()
     get_result_count = 0
+    sum_sold_total_7 = 0
+    sum_gmv_total_7 = 0
+    sum_sold_total_1 = 0
+    sum_gmv_total_1 = 0
     with closing(db_session_mk(autocommit=False)) as db_session:
         if index_result['hits']['hits']:
             for result_value in index_result['hits']['hits']:
@@ -215,17 +219,21 @@ async def wish_handle(group, task):
 
                 db_session.add(t)
                 get_result_count += 1
+                sum_sold_total_7 += result_value['_source']["sold_last_7"]
+                sum_gmv_total_7 += result_value['_source']["gmv_last_7"]
+                sum_sold_total_1 += result_value['_source']["sold_last_1"]
+                sum_gmv_total_1 += result_value['_source']["gmv_last_1"]
 
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
             ret = db_session.query(WishTask) \
                 .filter(WishTask.task_id == task['task_id']) \
                 .update({WishTask.status: 2,
                          WishTask.update_time: time_now,
-                         WishTask.product_total: index_result['hits']['total']['value'],
-                         WishTask.sold_total_7: index_result['aggregations']['sold_total_7']['value'],
-                         WishTask.gmv_total_7: round(index_result['aggregations']['gmv_total_7']['value'], 2),
-                         WishTask.sold_total_1: index_result['aggregations']['sold_total_1']['value'],
-                         WishTask.gmv_total_1: round(index_result['aggregations']['gmv_total_1']['value'], 2),
+                         WishTask.product_total: get_result_count,
+                         WishTask.sold_total_7: sum_sold_total_7,
+                         WishTask.gmv_total_7: round(sum_gmv_total_7, 2),
+                         WishTask.sold_total_1: sum_sold_total_1,
+                         WishTask.gmv_total_1: round(sum_gmv_total_1, 2),
                          WishTask.report_chart: f"查询到{index_result['hits']['total']['value']}条满足条件的商品数据",
                          WishTask.get_result_count: get_result_count},
                         synchronize_session=False)
