@@ -240,9 +240,14 @@ class ESBody:
 
                 # 关键词搜索
                 if element['field'] == "keyword":
-                    self.search_body['query']['bool']['must'].append({
-                        "multi_match": {"query": element['value'], "fuzziness": "AUTO",
-                                        "minimum_should_match": "2<70%"}})
+                    element_list.append({
+                        "match": {
+                            "title": {
+                                "query": element['value'],
+                                "minimum_should_match": "2<70%"
+                            }
+                        }
+                    })
 
             if not_list:
                 self.search_body['query']['bool']['must'][0]['bool']['should'].append({

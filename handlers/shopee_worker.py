@@ -39,43 +39,6 @@ class ESBody:
                     ]
                 }
             },
-            # "aggs": {
-            #     "sum_sold_total": {
-            #         "sum": {
-            #             "field": "sold_total"
-            #         }
-            #     },
-            #     "sum_sold_last_7": {
-            #         "sum": {
-            #             "field": "sold_last_7"
-            #         }
-            #     },
-            #     "sum_sold_last_3": {
-            #         "sum": {
-            #             "field": "sold_last_3"
-            #         }
-            #     },
-            #     "sum_gmv_last_7": {
-            #         "sum": {
-            #             "field": "gmv_last_7"
-            #         }
-            #     },
-            #     "sum_gmv_last_3": {
-            #         "sum": {
-            #             "field": "gmv_last_3"
-            #         }
-            #     },
-            #     "sum_sold_last_30": {
-            #         "sum": {
-            #             "field": "sold_last_30"
-            #         }
-            #     },
-            #     "sum_gmv_last_30": {
-            #         "sum": {
-            #             "field": "gmv_last_30"
-            #         }
-            #     }
-            # },
             "size": 50,
             "sort": [
                 {
@@ -198,9 +161,14 @@ class ESBody:
 
                 # 关键词搜索
                 if element['field'] == "keyword":
-                    self.search_body['query']['bool']['must'].append({
-                        "multi_match": {"query": element['value'], "fuzziness": "AUTO",
-                                        "minimum_should_match": "2<70%"}})
+                    element_list.append({
+                        "match": {
+                            "title": {
+                                "query": element['value'],
+                                "minimum_should_match": "2<70%"
+                            }
+                        }
+                    })
 
             if not_list:
                 self.search_body['query']['bool']['must'][0]['bool']['should'].append({
@@ -240,7 +208,6 @@ async def shopee_handle(group, task):
         )
 
         conn.execute(del_body)
-
 
         try:
             es = ESBody()
@@ -421,4 +388,3 @@ async def shopee_handle(group, task):
 
             result_msg = conn.execute(insert_stmt_msg)
             logger.info(e)
-
