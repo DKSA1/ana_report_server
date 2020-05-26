@@ -355,7 +355,7 @@ async def shopee_handle(group, task):
             insert_stmt_msg = ins_msg.values(
                 {
                     "user_id": task['user_id'],
-                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_id": str(task['user_id']) + str(int(time.time())),
                     "msg_content": "您的Shopee自定义报告" + task['report_name'] + "于" +
                                    time_now + "生成成功",
                     "create_at": time_now,
@@ -378,7 +378,7 @@ async def shopee_handle(group, task):
             insert_stmt_msg = ins_msg.values(
                 {
                     "user_id": task['user_id'],
-                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_id": str(task['user_id']) + str(int(time.time())),
                     "msg_content": "您的Shopee自定义报告" + task['report_name'] + "于" +
                                    time_now + "生成失败",
                     "create_at": time_now,
