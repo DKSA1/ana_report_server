@@ -484,7 +484,7 @@ async def ebay_handle(group, task):
             insert_stmt_msg = ins_msg.values(
                 {
                     "user_id": task['user_id'],
-                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_id": str(task['user_id']) + str(int(time.time())),
                     "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
                                    time_now + "生成成功,请及时查看!",
                     "create_at": time_now,
@@ -518,7 +518,7 @@ async def ebay_handle(group, task):
             insert_stmt_msg = ins_msg.values(
                 {
                     "user_id": task['user_id'],
-                    "msg_id": task['user_id'] + str(int(time.time())),
+                    "msg_id": str(task['user_id']) + str(int(time.time())),
                     "msg_content": "您的Ebay自定义报告" + task['report_name'] + "于" +
                                    time_now + "生成失败,请重新编辑条件或联系网站管理员!",
                     "create_at": time_now,
