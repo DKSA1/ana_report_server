@@ -316,7 +316,7 @@ class AmazonTask(Base):
         PrimaryKeyConstraint('task_id', 'user_id', name='PK_id'),
     )
     task_id = Column(Integer)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(String(32), nullable=False)
     report_name = Column(String(128), nullable=False, default=0)
     site = Column(String(8))
     create_time = Column(TIMESTAMP, nullable=True)
@@ -384,7 +384,7 @@ class WishTask(Base):
         PrimaryKeyConstraint('task_id', 'user_id', name='PK_id'),
     )
     task_id = Column(Integer)
-    user_id = Column(Integer, nullable=False)
+    user_id = Column(String(32), nullable=False)
     report_name = Column(String(128), nullable=False, default=0)
     create_time = Column(TIMESTAMP, nullable=True)
     update_time = Column(TIMESTAMP, nullable=True)
