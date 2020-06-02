@@ -231,6 +231,8 @@ ebay_product_report_result = Table(
     # Column('leaf_category_id', String(128), nullable=False, default=''),
     # Column('leaf_category_name', String(256), nullable=False, default=''),
     Column('store_location', String(64), nullable=False, default=''),
+    Column('item_location', String(64), nullable=False, default=''),
+    Column('item_location_country', String(64), nullable=False, default=''),
     Column('gmv_last_3_pop', Float, nullable=False, default=0),
     Column('gmv_last_3', DECIMAL(10, 2), nullable=False, default=0),
     Column('gmv_last_1', DECIMAL(10, 2), nullable=False, default=0),
