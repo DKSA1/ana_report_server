@@ -416,6 +416,8 @@ async def ebay_handle(group, task):
                     # 需要构造
                     "category_path": str(item['_source']['category_path']),
                     "store_location": item['_source']['store_location'],
+                    "item_location": item['_source']['item_location'],
+                    "item_location_country": item['_source']['item_location_country'],
                     "seller": item['_source']['seller'],
                     "price": item['_source']['price'],
                     "gmv_last_3_pop": item['_source']['gmv_last_3_pop'],
@@ -446,6 +448,8 @@ async def ebay_handle(group, task):
                     price=insert_stmt.inserted.price,
                     category_path=insert_stmt.inserted.category_path,
                     store_location=insert_stmt.inserted.store_location,
+                    item_location=insert_stmt.inserted.item_location,
+                    item_location_country=insert_stmt.inserted.item_location_country,
                     gmv_last_3_pop=insert_stmt.inserted.gmv_last_3_pop,
                     gmv_last_3=insert_stmt.inserted.gmv_last_3,
                     gmv_last_1=insert_stmt.inserted.gmv_last_1,
