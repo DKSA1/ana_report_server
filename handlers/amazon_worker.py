@@ -95,7 +95,7 @@ class AmazonBody:
         }
 
     def create_search(self, task_params):
-
+        category_name = None
         # 排序条件
         if task_params['order_by'] and task_params['order']:
             self.search_body['sort'][0] = {
@@ -117,6 +117,8 @@ class AmazonBody:
 
                 # 基础条件: 商家,品牌,品类
                 if element['field'] in self.element_e:
+                    if element.get('name'):  # 如果是 类目搜索 获取
+                        category_name = element.get('name')
                     element_list.append({"term": {element['field']: {"value": element['value']}}})
 
                 # 数据条件
@@ -152,7 +154,7 @@ class AmazonBody:
                     }
                 })
 
-        return self.search_body
+        return self.search_body, category_name
 
 
 async def amazon_handle(group, task):
@@ -164,7 +166,7 @@ async def amazon_handle(group, task):
 
     es = AmazonBody()
     try:
-        search_body = es.create_search(task)
+        search_body, category_name = es.create_search(task)
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
         index_result = await es_connection.search(
                 index=task['index_name'],
@@ -198,6 +200,21 @@ async def amazon_handle(group, task):
                 t.asin = result_value['_source']["asin"]
                 t.img = result_value['_source']["img"]
                 t.title = emoji.demojize(result_value['_source']["title"])
+                path_list = []
+                if category_name and result_value['_source']["category_path"]:
+                    for keyword in result_value['_source']["category_path"]:
+                        if category_name in keyword:
+                            for name in keyword.split(':'):
+                                path_list.append(name)
+                            break
+                else:
+                    if result_value['_source']["top_category_name"] and result_value['_source']["category_path"]:
+                        for keyword in result_value['_source']["category_path"]:
+                            if result_value['_source']["top_category_name"] in keyword:
+                                for name in keyword.split(':'):
+                                    path_list.append(name)
+                                break
+                t.category_path = str(path_list)
                 t.site = result_value['_source']["site"]
                 t.brand = result_value['_source']["brand"]
                 t.merchant_name = emoji.demojize(result_value['_source']["merchant_name"])

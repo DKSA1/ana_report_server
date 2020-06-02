@@ -349,6 +349,7 @@ class AmazonTaskResult(Base):
     asin = Column(String(16), nullable=False)
     img = Column(String(256), default='')
     title = Column(String(512), nullable=False, default='')
+    category_path = Column(String(512), nullable=False, default='')
     site = Column(String(32), nullable=False)
     brand = Column(String(64), nullable=True)
     merchant_name = Column(String(128), nullable=True)
