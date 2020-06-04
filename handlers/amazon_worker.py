@@ -201,19 +201,21 @@ async def amazon_handle(group, task):
                 t.img = result_value['_source']["img"]
                 t.title = emoji.demojize(result_value['_source']["title"])
                 path_list = []
-                if category_name and result_value['_source']["category_path"]:
+                if result_value['_source']["top_category_name"] and result_value['_source']["category_path"]:
                     for keyword in result_value['_source']["category_path"]:
-                        if category_name in keyword:
+                        if result_value['_source']["top_category_name"] in keyword:
+                            if len(keyword) == len(result_value['_source']["top_category_name"]):
+                                continue
                             for name in keyword.split(':'):
-                                path_list.append(name)
+                                path_list.append({
+                                    "category_name": name
+                                })
                             break
-                else:
-                    if result_value['_source']["top_category_name"] and result_value['_source']["category_path"]:
-                        for keyword in result_value['_source']["category_path"]:
-                            if result_value['_source']["top_category_name"] in keyword:
-                                for name in keyword.split(':'):
-                                    path_list.append(name)
-                                break
+                if result_value['_source']["category_path"] and not path_list:
+                    for name in result_value['_source']["category_path"][-1].split(':'):
+                        path_list.append({
+                            "category_name": name
+                        })
                 t.category_path = str(path_list)
                 t.site = result_value['_source']["site"]
                 t.brand = result_value['_source']["brand"]
