@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from models.models import AmazonTaskResult, AmazonTask, AnaUserMsg, AnaUserPermission
+from models.models import AmazonTaskResult, AmazonTask, AnaUserMsg, AnaUserPermission, AmazonCategory
 from config import *
 import re
 import time
@@ -152,6 +152,25 @@ class AmazonBody:
         return self.search_body, category_name
 
 
+# 补全 类目排名信息
+async def category_rank_info_suggest(category_list, site):
+    category_id_list = []
+    for item in category_list[1:]:
+        category_id_list.append(item.get('id'))
+
+    with closing(db_session_mk(autocommit=True)) as db_session:
+        category_info = db_session.query(AmazonCategory.category_name, AmazonCategory.category_id) \
+                .filter(AmazonCategory.site == site, AmazonCategory.category_id.in_(category_id_list)).all()
+        category_info_mapping = {}
+        if category_info:
+            for one_category_info in category_info:
+                category_info_mapping[one_category_info.category_id] = one_category_info.category_name
+        for index in range(len(category_list[1:])):
+            category_list[index + 1]['name'] = category_info_mapping.get(category_list[index + 1]['id'])
+
+    return category_list
+
+
 async def amazon_handle(group, task):
     logger.info("amazon report task start")
     hy_task = ANATask(task)
@@ -214,18 +233,26 @@ async def amazon_handle(group, task):
                 t.asin = result_value['_source']["asin"]
                 t.img = result_value['_source']["img"]
                 t.title = emoji.demojize(result_value['_source']["title"])
-                path_list = []
-                if result_value['_source']["top_category_name"] and result_value['_source']["category_path"]:
-                    for keyword in result_value['_source']["category_path"]:
-                        if result_value['_source']["top_category_name"] in keyword:
-                            if len(keyword) == len(result_value['_source']["top_category_name"]):
-                                continue
-                            for name in keyword.split(':'):
-                                path_list.append(name)
-                            break
-                if result_value['_source']["category_path"] and not path_list:
-                    for name in result_value['_source']["category_path"][-1].split(':'):
-                        path_list.append(name)
+                path_list = [
+                    {
+                        "name": result_value['_source']["top_category_name"],
+                        "id": result_value['_source']["top_category_id"],
+                        "rank": result_value['_source']["top_category_rank"]
+                    }
+                ]
+                if result_value['_source']["sub_category1_id"]:
+                    path_list.append({
+                        "name": None,
+                        "id": result_value['_source']["sub_category1_id"],
+                        "rank": result_value['_source']["sub_category1_rank"]
+                    })
+                if result_value['_source']["sub_category2_id"]:
+                    path_list.append({
+                        "name": None,
+                        "id": result_value['_source']["sub_category2_id"],
+                        "rank": result_value['_source']["sub_category2_rank"]
+                    })
+                path_list = await category_rank_info_suggest(path_list, result_value['_source']["site"])
                 t.category_path = str(path_list)
                 t.site = result_value['_source']["site"]
                 t.brand = result_value['_source']["brand"]

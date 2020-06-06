@@ -471,3 +471,20 @@ class AnaUserPermission(Base):
     baned_seller = Column(TEXT, nullable=False, default="")
     baned_brand = Column(TEXT, nullable=False, default="")
     update_time = Column(TIMESTAMP, nullable=False, default=0)
+
+
+class AmazonCategory(Base):
+    __tablename__ = 'amazon_category'
+    __table_args__ = (
+        PrimaryKeyConstraint('site', 'category_id_path', name='PK_id'),
+    )
+    category_id = Column(String(32), nullable=False, default='')
+    category_name = Column(String(128), nullable=False, default='')
+    level = Column(Integer, nullable=False, default=0)
+    is_leaf = Column(Integer, nullable=False, default=0)
+    parent_id = Column(String(32), nullable=False, default='')
+    site = Column(String(8), nullable=False, default='')
+    category_id_path = Column(String(128), nullable=False, default='')
+    category_name_path = Column(String(512), nullable=False, default='')
+    hy_create_time = Column(TIMESTAMP, nullable=False, default=0)
+    update_time = Column(TIMESTAMP, nullable=False, default=0)
