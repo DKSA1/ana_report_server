@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from models.models import AmazonTaskResult, AmazonTask, AnaUserMsg
+from models.models import AmazonTaskResult, AmazonTask, AnaUserMsg, AnaUserPermission
 from config import *
 import re
 import time
@@ -162,6 +162,25 @@ async def amazon_handle(group, task):
     es = AmazonBody()
     try:
         search_body, category_name = es.create_search(task)
+        # 获取用户 数据过滤信息 对请求 数据进行过滤
+        with closing(db_session_mk(autocommit=True)) as db_session:
+            permission_info = db_session.query(AnaUserPermission.is_bailun, AnaUserPermission.amazon_permission,
+                                                    AnaUserPermission.baned_seller, AnaUserPermission.baned_brand) \
+                .filter(AnaUserPermission.user_id == task["user_id"]).first()
+            if permission_info:
+                if permission_info.is_bailun == "4k":
+                    pass
+                else:
+                    category_list = eval(permission_info.amazon_permission).get(task["site"])
+                    if category_list:
+                        search_body['query']['bool']['filter'].append({"terms": {"category_id": category_list}})
+                    seller_list = eval(permission_info.baned_seller).get("amazon")
+                    if seller_list:
+                        search_body['query']['bool']['must_not'].append({"terms": {"merchant_name": seller_list}})
+                    brand_list = eval(permission_info.baned_brand).get("amazon")
+                    if brand_list:
+                        search_body['query']['bool']['must_not'].append({"terms": {"brand": brand_list}})
+
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
         index_result = await es_connection.search(
                 index=task['index_name'],

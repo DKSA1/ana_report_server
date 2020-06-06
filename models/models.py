@@ -454,3 +454,20 @@ ana_user_permission = Table(
     # Column('report_count_update', DateTime, nullable=False),
     PrimaryKeyConstraint('user_id', name='pk')
 )
+
+
+class AnaUserPermission(Base):
+    __tablename__ = 'ana_user_permission'
+    __table_args__ = (
+        PrimaryKeyConstraint('user_id', name='PK_id'),
+    )
+    user_id = Column(String(32), nullable=False)
+    is_bailun = Column(String(10), default='')
+    ebay_permission = Column(TEXT, nullable=False, default='')
+    amazon_permission = Column(TEXT, nullable=False, default='')
+    shopee_permission = Column(TEXT, nullable=False, default='')
+    wish_permission = Column(TEXT, nullable=False, default='')
+    walmart_permission = Column(TEXT, nullable=False, default='')
+    baned_seller = Column(TEXT, nullable=False, default="")
+    baned_brand = Column(TEXT, nullable=False, default="")
+    update_time = Column(TIMESTAMP, nullable=False, default=0)

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from models.models import WishTask, WishTaskResult, AnaUserMsg
+from models.models import WishTask, WishTaskResult, AnaUserMsg, AnaUserPermission
 from config import *
 import time
 import emoji as emoji
@@ -167,6 +167,25 @@ async def wish_handle(group, task):
 
     try:
         search_body = es.create_search(task)
+        # 获取用户 数据过滤信息 对请求 数据进行过滤
+        with closing(db_session_mk(autocommit=True)) as db_session:
+            permission_info = db_session.query(AnaUserPermission.is_bailun, AnaUserPermission.wish_permission,
+                                               AnaUserPermission.baned_seller, AnaUserPermission.baned_brand) \
+                .filter(AnaUserPermission.user_id == task["user_id"]).first()
+            if permission_info:
+                if permission_info.is_bailun == "4k":
+                    pass
+                else:
+                    category_list = eval(permission_info.wish_permission).get("all")
+                    if category_list:
+                        search_body['query']['bool']['filter'].append({"terms": {"category_id": category_list}})
+                    seller_list = eval(permission_info.baned_seller).get("wish")
+                    if seller_list:
+                        search_body['query']['bool']['must_not'].append({"terms": {"shop_name": seller_list}})
+                    brand_list = eval(permission_info.baned_brand).get("wish")
+                    if brand_list:
+                        search_body['query']['bool']['must_not'].append({"terms": {"brand": brand_list}})
+
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
         index_result = await es_connection.search(
                 index=task['index_name'],
