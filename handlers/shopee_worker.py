@@ -8,7 +8,8 @@ from sqlalchemy import create_engine, select, and_, update, delete
 from sqlalchemy.dialects.mysql import insert
 
 import pipeflow
-from models.models import shopee_custom_report_task, shopee_category, shopee_product_report_result, ana_user_msg
+from models.models import shopee_custom_report_task, shopee_category, shopee_product_report_result, ana_user_msg, \
+    ana_user_permission
 from pipeflow import NsqInputEndpoint
 from config import *
 from util.log import logger
@@ -20,6 +21,47 @@ WORKER_NUMBER = 1
 
 
 # TOPIC_NAME = REPORT_TASK_TOPIC + '.product'
+
+# 权限过滤
+async def get_permission_es_body(user_id, search_body, site):
+    '''获取用户 数据过滤信息 对请求 数据进行过滤'''
+    with engine.connect() as connection:
+        try:
+            select_permission = select([
+                ana_user_permission.c.is_bailun,
+                ana_user_permission.c.ebay_permission,
+                ana_user_permission.c.baned_seller,
+                ana_user_permission.c.baned_brand
+            ]).where(
+                and_(
+                    ana_user_permission.c.user_id == user_id
+                )
+            )
+
+            cursor = connection.execute(select_permission)
+            record = cursor.fetchone()
+
+        except Exception as e:
+            logger.info(e)
+            logger.info("DB error")
+        if record:
+            if record['is_bailun'] == '4k':
+                return search_body
+            else:
+                shopee_permission = eval(record['shopee_permission'])
+                if shopee_permission[site]:
+                    search_body['query']['bool']['must'].append(
+                        {"terms": {"category_id": [j for i in shopee_permission.values() for j in i]}})
+                seller_list = eval(record['baned_seller'])['shopee'] if 'shopee' in eval(
+                    record['baned_seller']) else None
+                if seller_list:
+                    search_body['query']['bool']['must_not'].append({"terms": {"seller": seller_list}})
+                brand_list = eval(record['baned_brand'])['shopee'] if 'shopee' in eval(
+                    record['baned_brand']) else None
+                if brand_list:
+                    search_body['query']['bool']['must_not'].append({"terms": {"brand": brand_list}})
+
+        return search_body
 
 
 class ESBody:
@@ -36,7 +78,8 @@ class ESBody:
                                 ]
                             }
                         }
-                    ]
+                    ],
+                    "must_not":[]
                 }
             },
             "size": 50,
@@ -213,6 +256,8 @@ async def shopee_handle(group, task):
             es = ESBody()
             # # 逐个任务完成查询es写入db
             search_body = es.create_search(task)
+            search_body = await get_permission_es_body(task['user_id'], search_body, task['site'])
+
             logger.info("========================es请求体================================")
             logger.info(json.dumps(search_body))
             logger.info("========================es请求体================================")

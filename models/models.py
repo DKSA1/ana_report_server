@@ -436,3 +436,21 @@ class WishTaskResult(Base):
     is_hwc = Column(Integer, nullable=False, default=0)
     is_pb = Column(Integer, nullable=False, default=0)
     is_verified = Column(Integer, nullable=False, default=0)
+
+
+ana_user_permission = Table(
+    'ana_user_permission', metadata,
+    Column('user_id', String(32), nullable=False, default=""),
+    Column('is_bailun', String(10), nullable=False, default=""),
+    Column('ebay_permission', TEXT, nullable=False, default=""),
+    Column('amazon_permission', TEXT, nullable=False, default=""),
+    Column('shopee_permission', TEXT, nullable=False, default=""),
+    Column('wish_permission', TEXT, nullable=False, default=""),
+    Column('baned_seller', TEXT, nullable=False, default=""),
+    Column('baned_brand', TEXT, nullable=False, default=""),
+    Column('walmart_permission', TEXT, nullable=False, default=""),
+    Column('update_time', DateTime, nullable=False),
+    # Column('report_count', Integer, nullable=False),
+    # Column('report_count_update', DateTime, nullable=False),
+    PrimaryKeyConstraint('user_id', name='pk')
+)
