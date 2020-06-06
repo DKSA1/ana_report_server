@@ -29,7 +29,7 @@ async def get_permission_es_body(user_id, search_body, site):
         try:
             select_permission = select([
                 ana_user_permission.c.is_bailun,
-                ana_user_permission.c.ebay_permission,
+                ana_user_permission.c.shopee_permission,
                 ana_user_permission.c.baned_seller,
                 ana_user_permission.c.baned_brand
             ]).where(
