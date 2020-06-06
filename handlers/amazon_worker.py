@@ -30,13 +30,8 @@ class AmazonBody:
                 "bool": {
                     "filter": [],
                     "must": [
-                                {
-                                    "bool": {
-                                        "should": [
-
-                                        ]
-                                    }
-                                }
+                                {"bool": {"should": []}},
+                                {"term": {"effective": {"value": True}}}
                             ],
                     "must_not": []
                 }
