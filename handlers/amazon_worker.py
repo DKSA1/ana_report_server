@@ -255,7 +255,7 @@ async def amazon_handle(group, task):
                 path_list = await category_rank_info_suggest(path_list, result_value['_source']["site"])
                 t.category_path = str(path_list)
                 t.site = result_value['_source']["site"]
-                t.brand = result_value['_source']["brand"]
+                t.brand = result_value['_source']["brand"][:64]
                 t.merchant_name = emoji.demojize(result_value['_source']["merchant_name"])
                 t.price = result_value['_source']["price"]
                 t.top_category_rank = result_value['_source']["top_category_rank"]
