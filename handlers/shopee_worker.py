@@ -47,11 +47,12 @@ async def get_permission_es_body(user_id, search_body, site):
         if record:
             if record['is_bailun'] == '4k':
                 return search_body
-            else:
+            elif record['shopee_permission']:
                 shopee_permission = eval(record['shopee_permission'])
-                if shopee_permission[site]:
-                    search_body['query']['bool']['must'].append(
-                        {"terms": {"category_id": [j for i in shopee_permission.values() for j in i]}})
+                if shopee_permission:
+                    if site in shopee_permission:
+                        search_body['query']['bool']['must'].append(
+                            {"terms": {"category_id": [j for i in shopee_permission.values() for j in i]}})
                 seller_list = eval(record['baned_seller'])['shopee'] if 'shopee' in eval(
                     record['baned_seller']) else None
                 if seller_list:

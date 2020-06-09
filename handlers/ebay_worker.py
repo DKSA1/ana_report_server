@@ -48,11 +48,12 @@ async def get_permission_es_body(user_id, search_body, site):
         if record:
             if record['is_bailun'] == '4k':
                 return search_body
-            else:
+            elif record['ebay_permission']:
                 ebay_permission = eval(record['ebay_permission'])
-                if ebay_permission[site]:
-                    search_body['query']['bool']['must'].append(
-                        {"terms": {"category_id": [j for i in ebay_permission.values() for j in i]}})
+                if ebay_permission:
+                    if site in ebay_permission:
+                        search_body['query']['bool']['must'].append(
+                            {"terms": {"category_id": [j for i in ebay_permission.values() for j in i]}})
                 seller_list = eval(record['baned_seller'])['ebay'] if 'ebay' in eval(
                     record['baned_seller']) else None
                 if seller_list:
