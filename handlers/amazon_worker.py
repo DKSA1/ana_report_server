@@ -105,6 +105,9 @@ class AmazonBody:
         # 过滤site
         self.search_body['query']['bool']['must'].append({"term": {"site": {"value": task_params['site']}}})
 
+        # 一级类目排名　过滤，排名等于零的商品　多为无效数据，直接过滤掉
+        self.search_body['query']['bool']['must'].append({"range": {"top_category_rank": {"gte": 1}}})
+
         for group in eval(task_params['condition']):
             element_list = []
             not_list = []
