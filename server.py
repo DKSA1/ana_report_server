@@ -45,7 +45,7 @@ def run():
     wish_report_group.add_input_endpoint("input", wish_input_end)
 
     # 处理 walmart 报表任务
-    walmart_input_end = NsqInputEndpoint(WISH_REPORT_TASK_TOPIC, 'walmart_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
+    walmart_input_end = NsqInputEndpoint(WALMART_REPORT_TASK_TOPIC, 'walmart_analysis', WORKER_NUMBER, **INPUT_NSQ_CONF)
     wish_report_group = server.add_group('walmart_report', WORKER_NUMBER)
     wish_report_group.set_handle(walmart_handle)
     wish_report_group.add_input_endpoint("input", walmart_input_end)
