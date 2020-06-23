@@ -178,7 +178,7 @@ async def walmart_handle(group, task):
                 if permission_info.is_bailun == "4k":
                     pass
                 else:
-                    category_list = eval(permission_info.wish_permission).get("all")
+                    category_list = eval(permission_info.walmart_permission).get("all")
                     if category_list:
                         search_body['query']['bool']['filter'].append({"terms": {"category_id": category_list}})
                     seller_list = eval(permission_info.baned_seller).get("walmart")
