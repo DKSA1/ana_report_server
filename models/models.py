@@ -517,7 +517,7 @@ class WalmartTask(Base):
 class WalmartTaskResult(Base):
     __tablename__ = 'walmart_product_report_result'
     __table_args__ = (
-        PrimaryKeyConstraint('task_id', name='PK_id'),
+        PrimaryKeyConstraint('task_id', 'item_id', name='PK_id'),
     )
     task_id = Column(Integer, nullable=False)
     item_id = Column(String(16), nullable=False)
