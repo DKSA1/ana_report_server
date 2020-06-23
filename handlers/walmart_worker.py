@@ -195,7 +195,7 @@ async def walmart_handle(group, task):
                 size=task['result_count'])
     except Exception as e:
         logger.error(f"{e}, **** Search failed ****")
-        with closing(db_session_mk(autocommit=True)) as db_session:
+        with closing(db_session_mk(autocommit=False)) as db_session:
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
             ret = db_session.query(WalmartTask) \
                 .filter(WalmartTask.task_id == task['task_id']) \
@@ -212,7 +212,7 @@ async def walmart_handle(group, task):
     sum_gmv_total_7 = 0
     sum_sold_total_1 = 0
     sum_gmv_total_1 = 0
-    with closing(db_session_mk(autocommit=False)) as db_session:
+    with closing(db_session_mk(autocommit=True)) as db_session:
         if index_result['hits']['hits']:
             for result_value in index_result['hits']['hits']:
                 #  插入商品信息
@@ -276,11 +276,11 @@ async def walmart_handle(group, task):
             db_session.add(m)
             logger.info("*************************Walmart 报告消息写入成功*************************")
 
-            try:
-                db_session.commit()
-            except Exception as e:
-                logger.info(e)
-                db_session.rollback()
+            # try:
+            #     db_session.commit()
+            # except Exception as e:
+            #     logger.info(e)
+            #     db_session.rollback()
 
         else:
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
