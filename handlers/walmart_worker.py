@@ -299,11 +299,11 @@ async def walmart_handle(group, task):
             m.status = 0
             db_session.add(m)
             logger.info("*************************Walmart 报告消息写入成功*************************")
-            try:
-                db_session.commit()
-            except Exception as e:
-                logger.info(e)
-                db_session.rollback()
+            # try:
+            #     db_session.commit()
+            # except Exception as e:
+            #     logger.info(e)
+            #     db_session.rollback()
 
     logger.info("wish report task over")
 
