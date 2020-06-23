@@ -348,7 +348,6 @@ class AmazonTaskResult(Base):
     __table_args__ = (
         PrimaryKeyConstraint('id', 'asin', name='PK_id'),
     )
-    id = Column(Integer, autoincrement=True)
     task_id = Column(Integer, nullable=False)
     asin = Column(String(16), nullable=False)
     img = Column(String(256), default='')
@@ -414,9 +413,8 @@ class WishTask(Base):
 class WishTaskResult(Base):
     __tablename__ = 'wish_product_report_result'
     __table_args__ = (
-        PrimaryKeyConstraint('id', 'task_id', name='PK_id'),
+        PrimaryKeyConstraint('task_id', name='PK_id'),
     )
-    id = Column(Integer, autoincrement=True)
     task_id = Column(Integer, nullable=False)
     pid = Column(String(32), nullable=False)
     img = Column(String(256), default='')
@@ -488,3 +486,52 @@ class AmazonCategory(Base):
     category_name_path = Column(String(512), nullable=False, default='')
     hy_create_time = Column(TIMESTAMP, nullable=False, default=0)
     update_time = Column(TIMESTAMP, nullable=False, default=0)
+
+
+class WalmartTask(Base):
+    __tablename__ = 'walmart_custom_report_task'
+    __table_args__ = (
+        PrimaryKeyConstraint('task_id', 'user_id', name='PK_id'),
+    )
+    task_id = Column(Integer)
+    user_id = Column(String(32), nullable=False)
+    report_name = Column(String(128), nullable=False, default=0)
+    create_time = Column(TIMESTAMP, nullable=True)
+    update_time = Column(TIMESTAMP, nullable=True)
+    report_chart = Column(String(128), nullable=True)
+    # 0=待执行， 1=执行中，2=成功，3=失败
+    status = Column(Integer, nullable=False, default=0)
+    save_result_numb = Column(Integer, nullable=True)
+    context = Column(TEXT, nullable=False, default='')
+    order_by = Column(String(32))
+    order = Column(String(4))
+    methods = Column(String(512))
+    product_total = Column(Integer, default=0)
+    sold_total_7 = Column(Integer, default=0)
+    gmv_total_7 = Column(DECIMAL(12, 2), default=0)
+    type = Column(String(32))
+    index_name = Column(String(32))
+    get_result_count = Column(Integer)
+
+
+class WalmartTaskResult(Base):
+    __tablename__ = 'walmart_product_report_result'
+    __table_args__ = (
+        PrimaryKeyConstraint('task_id', name='PK_id'),
+    )
+    task_id = Column(Integer, nullable=False)
+    item_id = Column(String(16), nullable=False)
+    img = Column(String(256), default='')
+    title = Column(String(512), nullable=False, default='')
+    category_path = Column(String(512), nullable=False, default='')
+    brand = Column(String(64), nullable=True)
+    merchant_name = Column(String(128), nullable=True)
+    price = Column(DECIMAL(8, 2), nullable=True, default=0)
+    sold_last_7 = Column(Integer, nullable=False, default=0)
+    gmv_last_7 = Column(DECIMAL(12, 2))
+    sold_last_30 = Column(Integer)
+    gmv_last_30 = Column(DECIMAL(12, 2), default=0)
+    review_score = Column(DECIMAL(8, 2), default=0)
+    sold_last_1 = Column(Integer, nullable=False, default=0)
+    review_number = Column(Integer, nullable=False, default=0)
+    gmv_last_1 = Column(DECIMAL(12, 2))

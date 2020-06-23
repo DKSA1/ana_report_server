@@ -3,7 +3,7 @@ from contextlib import closing
 from datetime import datetime, timedelta
 from util.log import logger
 from config import *
-from models.models import AmazonTask, WishTask
+from models.models import AmazonTask, WishTask, WalmartTask
 from util.task_protocol import pub_to_nsq
 
 
@@ -95,6 +95,49 @@ class TaskSaveToNsqScheduler:
                                 .filter(WishTask.task_id == task.task_id) \
                                 .update({WishTask.status: 1, WishTask.update_time: time_now,
                                          WishTask.report_chart: "报告任务正在执行,请耐心等待~!"},
+                                        synchronize_session=False)
+                            try:
+                                db_session.commit()
+                            except:
+                                db_session.rollback()
+
+            with closing(self.db_session_mk(autocommit=False)) as db_session:
+
+                wish_tasks = db_session.query(WalmartTask.task_id, WalmartTask.index_name,
+                                         WalmartTask.save_result_numb, WalmartTask.context, WalmartTask.user_id,
+                                         WalmartTask.order_by, WalmartTask.order, WalmartTask.type, WalmartTask.report_name) \
+                    .filter(WalmartTask.status == 0).all()
+
+                if wish_tasks:
+                    for task in wish_tasks:
+                        task_info = {
+                            "task_id": task.task_id,
+                            "type": task.type,
+                            "condition": str(task.context),
+                            "result_count": task.save_result_numb,
+                            "order_by": task.order_by,
+                            "order": task.order,
+                            "index_name": task.index_name,
+                            "user_id": task.user_id,
+                            "report_name": task.report_name
+                        }
+
+                        nsq_topic = WALMART_REPORT_TASK_TOPIC
+                        nsq_msg = {
+                            "task": "walmart_report_product",
+                            "data": task_info
+                        }
+                        task_status = await pub_to_nsq(NSQ_NSQD_HTTP_ADDR, nsq_topic, nsq_msg)
+
+                        if task_status != 200:
+                            logger.info(f"{task.task_id} save to nsq failed")
+                            continue
+                        else:
+                            time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
+                            ret = db_session.query(AmazonTask) \
+                                .filter(WalmartTask.task_id == task.task_id) \
+                                .update({WalmartTask.status: 1, WalmartTask.update_time: time_now,
+                                         WalmartTask.report_chart: "报告任务正在执行,请耐心等待~!"},
                                         synchronize_session=False)
                             try:
                                 db_session.commit()
