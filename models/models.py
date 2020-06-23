@@ -346,7 +346,7 @@ class AmazonTask(Base):
 class AmazonTaskResult(Base):
     __tablename__ = 'amazon_product_report_result'
     __table_args__ = (
-        PrimaryKeyConstraint('id', 'asin', name='PK_id'),
+        PrimaryKeyConstraint('task_id', 'asin', name='PK_id'),
     )
     task_id = Column(Integer, nullable=False)
     asin = Column(String(16), nullable=False)
