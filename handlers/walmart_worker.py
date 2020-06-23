@@ -281,14 +281,6 @@ async def walmart_handle(group, task):
             except Exception as e:
                 logger.info(e)
                 db_session.rollback()
-                with closing(db_session_mk(autocommit=True)) as db_session:
-                    time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
-                    ret = db_session.query(WalmartTask) \
-                        .filter(WalmartTask.task_id == task['task_id']) \
-                        .update({WalmartTask.status: 3,
-                                 WalmartTask.update_time: time_now,
-                                 WalmartTask.report_chart: "查询结果保存失败,请重新设置生成条件或联系客服"},
-                                synchronize_session=False)
 
         else:
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
