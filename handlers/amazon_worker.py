@@ -228,7 +228,7 @@ async def amazon_handle(group, task):
     sum_sold_total_30 = 0
     sum_gmv_total_30 = 0
     with closing(db_session_mk(autocommit=False)) as db_session:
-        if index_result['hits']['hits']:
+        if index_result['hits'].get('hits'):
             for result_value in index_result['hits']['hits']:
                 #  插入商品信息
                 t = AmazonTaskResult()
