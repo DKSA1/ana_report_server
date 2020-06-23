@@ -213,7 +213,7 @@ async def walmart_handle(group, task):
     sum_sold_total_1 = 0
     sum_gmv_total_1 = 0
     with closing(db_session_mk(autocommit=False)) as db_session:
-        if index_result['hits'].get('hits'):
+        if index_result['hits']['hits']:
             for result_value in index_result['hits']['hits']:
                 #  插入商品信息
                 t = WalmartTaskResult()
