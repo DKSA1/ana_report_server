@@ -236,16 +236,12 @@ async def walmart_handle(group, task):
                 if category_name:
                     for keyword in result_value['_source']["category_path"]:
                         if category_name in keyword:
-                            for name in keyword.split(':'):
-                                path_list.append({
-                                    "category_name": name
-                                })
+                            for name in keyword.split('->'):
+                                path_list.append(name)
                 else:
                     if result_value['_source']["category_path"]:
-                        for name in result_value['_source']["category_path"][0].split(':'):
-                            path_list.append({
-                                "category_name": name
-                            })
+                        for name in result_value['_source']["category_path"][0].split('->'):
+                            path_list.append(name)
                 t.category_path = str(path_list)
 
                 db_session.add(t)
