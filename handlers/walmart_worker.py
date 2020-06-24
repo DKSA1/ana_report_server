@@ -221,7 +221,7 @@ async def walmart_handle(group, task):
                 t.item_id = result_value['_source']["item_id"]
                 t.img = result_value['_source']["img"]
                 t.title = emoji.demojize(result_value['_source']["title"])
-                t.brand = result_value['_source']["brand"]
+                t.brand = str(result_value['_source']["brand"])
                 t.merchant_name = emoji.demojize(result_value['_source']["merchant_name"])
                 t.price = result_value['_source']["price"]
                 t.sold_last_1 = result_value['_source']["sold_last_1"]
