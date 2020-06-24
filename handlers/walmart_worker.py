@@ -212,8 +212,8 @@ async def walmart_handle(group, task):
     sum_gmv_total_7 = 0
     sum_sold_total_1 = 0
     sum_gmv_total_1 = 0
-    with closing(db_session_mk(autocommit=True)) as db_session:
-        if index_result['hits']['hits']:
+    if index_result['hits']['hits']:
+        with closing(db_session_mk(autocommit=False)) as db_session:
             for result_value in index_result['hits']['hits']:
                 #  插入商品信息
                 t = WalmartTaskResult()
@@ -250,7 +250,12 @@ async def walmart_handle(group, task):
                 sum_gmv_total_7 += result_value['_source']["gmv_last_7"]
                 sum_sold_total_1 += result_value['_source']["sold_last_1"]
                 sum_gmv_total_1 += result_value['_source']["gmv_last_1"]
-
+            try:
+                db_session.commit()
+            except Exception as e:
+                logger.info(e)
+                db_session.rollback()
+        with closing(db_session_mk(autocommit=False)) as db_session:
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
             ret = db_session.query(WalmartTask) \
                 .filter(WalmartTask.task_id == task['task_id']) \
@@ -262,7 +267,13 @@ async def walmart_handle(group, task):
                          WalmartTask.report_chart: f"查询到{index_result['hits']['total']['value']}条满足条件的商品数据",
                          WalmartTask.get_result_count: get_result_count},
                         synchronize_session=False)
+            try:
+                db_session.commit()
+            except Exception as e:
+                logger.info(e)
+                db_session.rollback()
 
+        with closing(db_session_mk(autocommit=False)) as db_session:
             m = AnaUserMsg()
             m.user_id = task["user_id"]
             m.msg_id = str(task['user_id']) + str(int(time.time())),
@@ -272,13 +283,14 @@ async def walmart_handle(group, task):
             db_session.add(m)
             logger.info("*************************Walmart 报告消息写入成功*************************")
 
-            # try:
-            #     db_session.commit()
-            # except Exception as e:
-            #     logger.info(e)
-            #     db_session.rollback()
+            try:
+                db_session.commit()
+            except Exception as e:
+                logger.info(e)
+                db_session.rollback()
 
-        else:
+    else:
+        with closing(db_session_mk(autocommit=False)) as db_session:
             time_now = (datetime.now() + timedelta(hours=8)).strftime('%Y-%m-%d %H:%M:%S')
             ret = db_session.query(WalmartTask) \
                 .filter(WalmartTask.task_id == task['task_id']) \
@@ -295,11 +307,11 @@ async def walmart_handle(group, task):
             m.status = 0
             db_session.add(m)
             logger.info("*************************Walmart 报告消息写入成功*************************")
-            # try:
-            #     db_session.commit()
-            # except Exception as e:
-            #     logger.info(e)
-            #     db_session.rollback()
+            try:
+                db_session.commit()
+            except Exception as e:
+                logger.info(e)
+                db_session.rollback()
 
-    logger.info("wish report task over")
+    logger.info("Walmart report task over")
 
