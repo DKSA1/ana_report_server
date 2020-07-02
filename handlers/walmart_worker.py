@@ -175,18 +175,15 @@ async def walmart_handle(group, task):
                                                AnaUserPermission.baned_seller, AnaUserPermission.baned_brand) \
                 .filter(AnaUserPermission.user_id == task["user_id"]).first()
             if permission_info:
-                if permission_info.is_bailun == "4k":
-                    pass
-                else:
-                    category_list = eval(permission_info.walmart_permission).get("all")
-                    if category_list:
-                        search_body['query']['bool']['filter'].append({"terms": {"category_id": category_list}})
-                    seller_list = eval(permission_info.baned_seller).get("walmart")
-                    if seller_list:
-                        search_body['query']['bool']['must_not'].append({"terms": {"shop_name": seller_list}})
-                    brand_list = eval(permission_info.baned_brand).get("walmart")
-                    if brand_list:
-                        search_body['query']['bool']['must_not'].append({"terms": {"brand": brand_list}})
+                category_list = eval(permission_info.walmart_permission).get("all")
+                if category_list:
+                    search_body['query']['bool']['filter'].append({"terms": {"category_id": category_list}})
+                seller_list = eval(permission_info.baned_seller).get("walmart")
+                if seller_list:
+                    search_body['query']['bool']['must_not'].append({"terms": {"shop_name": seller_list}})
+                brand_list = eval(permission_info.baned_brand).get("walmart")
+                if brand_list:
+                    search_body['query']['bool']['must_not'].append({"terms": {"brand": brand_list}})
 
         es_connection = Elasticsearch(hosts=AMAZON_ELASTICSEARCH_URL, timeout=ELASTIC_TIMEOUT)
         index_result = await es_connection.search(
