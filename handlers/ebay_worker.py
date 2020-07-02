@@ -46,9 +46,9 @@ async def get_permission_es_body(user_id, search_body, site):
             logger.info(e)
             logger.info("DB error")
         if record:
-            if record['is_bailun'] == '4k':
-                return search_body
-            elif record['ebay_permission']:
+            # if record['is_bailun'] == '4k':
+            #     return search_body
+            if record['ebay_permission']:
                 ebay_permission = eval(record['ebay_permission'])
                 if ebay_permission:
                     if site in ebay_permission:
