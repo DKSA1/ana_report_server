@@ -256,7 +256,7 @@ async def amazon_handle(group, task):
                 t.category_path = str(path_list)
                 t.site = result_value['_source']["site"]
                 t.brand = result_value['_source']["brand"][:64]
-                t.merchant_name = emoji.demojize(result_value['_source']["merchant_name"])
+                t.merchant_name = emoji.demojize(result_value['_source']["merchant_name"][:128])
                 t.price = result_value['_source']["price"]
                 t.top_category_rank = result_value['_source']["top_category_rank"]
                 t.sold_last_7 = result_value['_source']["sold_last_7"]
