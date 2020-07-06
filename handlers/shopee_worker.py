@@ -45,9 +45,9 @@ async def get_permission_es_body(user_id, search_body, site):
             logger.info(e)
             logger.info("DB error")
         if record:
-            if record['is_bailun'] == '4k':
-                return search_body
-            elif record['shopee_permission']:
+            # if record['is_bailun'] == '4k':
+            #     return search_body
+            if record['shopee_permission']:
                 shopee_permission = eval(record['shopee_permission'])
                 if shopee_permission:
                     if site in shopee_permission:
