@@ -68,7 +68,7 @@ ebay_product_history = Table(
     Column('gmv_last_1', DECIMAL(10, 2), nullable=False, default=0),
     Column('gmv_last_3', DECIMAL(10, 2), nullable=False, default=0),
     Column('gmv_last_7', DECIMAL(10, 2), nullable=False, default=0),
-    Column('gmv_last_30', DECIMAL(10, 2), nullable=False, default=0),
+    Column('gmv_last_30', DECIMAL(18, 2), nullable=False, default=0),
     Column('gmv_last_1_delta', DECIMAL(10, 2), nullable=False, default=0),
     Column('gmv_last_3_delta', DECIMAL(10, 2), nullable=False, default=0),
     Column('gmv_last_7_delta', DECIMAL(10, 2), nullable=False, default=0),
